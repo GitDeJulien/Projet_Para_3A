@@ -11,6 +11,9 @@ Ce code à pour but de résoudre l'équation de conduction instationnaire en 2D,
  - Execution : 
     - make exec
 
+> [!NOTE]
+> Pour l'exécution du code il est nécessaire d'avoir un dossier __input__ avec un fichier __data.dat__ et un dossier __output__
+
 # Architecture du code
 
 ## data.cpp
