@@ -117,7 +117,65 @@ Matrix SpaceScheme::BuildMatrix(Data* data)
         exit(EXIT_FAILURE);
     }
     return matrix;     
-} 
+}
+
+std::vector<double> SpaceScheme::Lap_MatVectProduct(Data* data, std::vector<double> U) //DO: (I+dt*A)*U
+{
+
+    /*
+    This function compute direclty the matrix-vector product
+    --------------- U_res = (I+dt*A)*U ---------------------
+
+    And return the resulting vector U_res
+    
+    - This is usefull to not stock the full matrix A
+    - It work with Euler Implicite/Explicite and Crank-Nicholson scheme
+    */
+
+    int Nx(0);
+    int Ny(0);
+
+    Nx = data->Get_Nx();
+    Ny = data->Get_Ny();
+
+    double alpha(0.0);
+    double beta(0.0);
+    double gamma(0.0);
+
+    alpha = data->Get_dt()*data->Get_diffusion_coeff()*(2/(data->Get_hx()*data->Get_hx()) + 2/(data->Get_hy()*data->Get_hy()));
+    beta = -data->Get_dt()*data->Get_diffusion_coeff()/(data->Get_hx()*data->Get_hx());
+    gamma = -data->Get_dt()*data->Get_diffusion_coeff()/(data->Get_hy()*data->Get_hy());
+
+    std::vector<double> U_res;
+    U_res.resize(Nx*Ny);
+
+    if(data->Get_SpaceScheme() == 1){ //Laplacian centered discretisation
+        for(int i=1; i<=Nx; ++i){
+            for(int j=1; j<=Ny; ++j){
+                int l = this->index_MatToVect(data, i, j);
+                //Different case for condition Derichlet or Robin
+                if(data->Get_key_Schwarz_Bounds() == 1){ //Dirichlet homogene
+                    U_res[l] = 1 + alpha * U[l];
+                    if (i>1) {
+                        U_res[l] += beta*U[l-1];
+                    }
+                    if (i<Nx){
+                        U_res[l] += beta*U[l+1];
+                    }
+                    if (j>1) {
+                        U_res[l] += gamma*U[l-Nx];
+                    }
+                    if (j<Ny) {
+                        U_res[l] += gamma*U[l+Nx];
+                    }
+                }
+            }
+        }
+    }
+
+    return U_res;
+
+}
 
 
 std::vector<double> SpaceScheme::SourceTerme(Data* data, Function* function, const double t){

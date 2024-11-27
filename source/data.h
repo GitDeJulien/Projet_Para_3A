@@ -35,6 +35,9 @@ class Data {
         int _key_DownBoundCond;
         int _key_UpBoundCond;
 
+        //Boundary condition for Schwarz method
+        int _key_Schwarz_Bounds;
+
         //Source terme key
         int _key_SourceTerme;
 
@@ -74,6 +77,7 @@ class Data {
         const int & Get_key_LeftBoundCond() const {return _key_LeftBoundCond;};
         const int & Get_key_UpBoundCond() const {return _key_UpBoundCond;};
         const int & Get_key_DownBoundCond() const {return _key_DownBoundCond;};
+        const int & Get_key_Schwarz_Bounds() const {return _key_Schwarz_Bounds;};
         const int & Get_key_SourceTerme() const {return _key_SourceTerme;};
         const int & Get_key_InitialCondition() const {return _key_InitialCondition;};
         const std::string & Get_outputPath() const {return _outputPath;};

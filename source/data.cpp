@@ -53,6 +53,7 @@ Data::Data(std::string file_name)
             else if (key == "key_LeftBoundCond") this->_key_LeftBoundCond = int_value;
             else if (key == "key_UpBoundCond") this->_key_UpBoundCond = int_value;
             else if (key == "key_DownBoundCond") this->_key_DownBoundCond = int_value;
+            else if (key == "key_Schwarz_Bounds") this->_key_Schwarz_Bounds = int_value;
             else if (key == "key_SourceTerme") this->_key_SourceTerme = int_value;
             else if (key == "key_InitialCondition") this->_key_InitialCondition = int_value;
             else if (key == "outputPath") this->_outputPath = line.substr(equal_pos + 2).c_str();

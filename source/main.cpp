@@ -28,11 +28,12 @@ int main(int argc, char** argv) {
     //Pointer to Function class
     Function* function = new Function();
 
-    //Pointer to Linear Algebra class
-    LinearAlgebra* lin = new LinearAlgebra();
-
     //Pointer to Space Scheme class
     SpaceScheme* ssch = new SpaceScheme();
+
+    //Pointer to Linear Algebra class
+    LinearAlgebra* lin = new LinearAlgebra(ssch, data);
+
 
     //Pointer to Time Scheme class
     TimeScheme* tsch = new TimeScheme(data, lin, function, ssch);

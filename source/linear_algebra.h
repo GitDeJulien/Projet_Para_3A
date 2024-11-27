@@ -7,11 +7,15 @@
 
 #include "data.h"
 #include "functions.h"
+#include "space_scheme.h"
 #include "matrix.h"
 
 class LinearAlgebra {
 
     private: 
+
+    Data* _data;
+    SpaceScheme* _ssch;
 
     static double dot(const std::vector<double>& a, const std::vector<double>& b) {
         double result = 0.0;
@@ -26,13 +30,16 @@ class LinearAlgebra {
 
     public:
 
-    LinearAlgebra();
+    LinearAlgebra(SpaceScheme* ssch, Data* data);
 
     //Resolve the linear systeme AX=b with LU decomposition and backward, forward methods
     std::vector<double> LU(const Matrix& A, const std::vector<double> b);
 
     //Resolve the linear systeme AX=b with the Bi-Conjugate Gradient Stabilised methode
     std::vector<double> BiCGStab(const Matrix& A, const std::vector<double> b, int maxIterations, double tol);
+
+    //Resolve the linear systeme directly with the Laplacian matrix-vector product
+    std::vector<double> Lap_BiCGStab(const std::vector<double> b, int maxIterations, double tol);
 
 };
 

@@ -49,9 +49,22 @@ std::vector<double> TimeScheme::EulerImplicite(const Matrix& A, const std::vecto
     std::vector<double> Unp1;
     Unp1.resize(N);
 
-    //Identity matrix
-    Matrix I = Matrix::Identity(N);
-    Matrix A_star = (A.ScalarMultiply(this->_dt)).AddMatrix(I);
+    /*With stocked matrix
+        //Identity matrix
+        Matrix I = Matrix::Identity(N);
+        Matrix A_star = (A.ScalarMultiply(this->_dt)).AddMatrix(I);
+        std::vector<double> U_star;
+        U_star.resize(N);
+
+        for(int i=0; i<N; ++i) {
+            U_star[i] = Un[i] + this->_dt*bnp1[i];
+        }
+
+        //Unp1 = _lin->LU(A_star, U_star);
+        Unp1 = _lin->BiCGStab(A_star, U_star, 10000, 1e-6); 
+    */
+
+    //Without stocking
     std::vector<double> U_star;
     U_star.resize(N);
 
@@ -59,8 +72,7 @@ std::vector<double> TimeScheme::EulerImplicite(const Matrix& A, const std::vecto
         U_star[i] = Un[i] + this->_dt*bnp1[i];
     }
 
-    //Unp1 = _lin->LU(A_star, U_star);
-    Unp1 = _lin->BiCGStab(A_star, U_star, 10000, 1e-6);
+    Unp1 = _lin->Lap_BiCGStab(U_star, 10000, 1e-6);
 
     return Unp1;
 }
