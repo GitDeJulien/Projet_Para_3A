@@ -12,7 +12,7 @@ cfl = 0.8
 
 
 #Time scheme (1: Explicit Euler, 2: Implicit Euler, 3: Crank Nicholson)
-key_time_scheme = 1
+key_time_scheme = 2
 
 #Space scheme (1: Laplacian Centered)
 key_space_scheme = 1
@@ -33,7 +33,7 @@ key_SourceTerme = 1
 key_InitialCondition = 1
 
 #Output path
-outputPath = output/Explicite_Euler_cas3
+outputPath = output/Implicite_Euler_cas1
 
 
 #--END--#
