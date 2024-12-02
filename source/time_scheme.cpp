@@ -11,22 +11,16 @@ TimeScheme::TimeScheme(Data* data, LinearAlgebra* lin, Function* fct, SpaceSchem
 
 }
 
-std::vector<double> TimeScheme::EulerExplicite(const Matrix& A, const std::vector<double> Un , const std::vector<double> bn)
+std::vector<double> TimeScheme::EulerExplicite(const std::vector<double> Un , const std::vector<double> bn)
 {
-    if(A.cols != static_cast<int>(Un.size()) || Un.size() != bn.size()) {
-        std::cerr << "Error: dimensions don't agree in Euler Explicit function!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
 
     int N = Un.size();
 
     std::vector<double> Unp1;
     Unp1.resize(N);
 
-    //Identity matrix
-    Matrix I = Matrix::Identity(N);
-
-    Unp1 = ((A.ScalarMultiply(-this->_dt)).AddMatrix(I)).MatrixVectorProduct(Un);
+    //Unp1 = ((A.ScalarMultiply(-this->_dt)).AddMatrix(I)).MatrixVectorProduct(Un);
+    Unp1 = _ssch->Lap_MatVectProduct(_data, Un, 1);
 
     for(int i=0; i<N; ++i) {
         Unp1[i] += this->_dt*bn[i];
@@ -36,40 +30,31 @@ std::vector<double> TimeScheme::EulerExplicite(const Matrix& A, const std::vecto
 
 }
 
-std::vector<double> TimeScheme::EulerImplicite(const Matrix& A, const std::vector<double> Un , const std::vector<double> bnp1)
+std::vector<double> TimeScheme::EulerImplicite(const std::vector<double> Un , const std::vector<double> bnp1)
 {
 
-    if(A.cols != static_cast<int>(Un.size()) || Un.size() != bnp1.size()) {
-        std::cerr << "Error: dimensions don't agree in Euler Explicit function!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
     int N = Un.size();
+    int Nx = _data->Get_Nx();
+    int Ny = _data->Get_Ny();
 
     std::vector<double> Unp1;
     Unp1.resize(N);
 
-    /*With stocked matrix
-        //Identity matrix
-        Matrix I = Matrix::Identity(N);
-        Matrix A_star = (A.ScalarMultiply(this->_dt)).AddMatrix(I);
-        std::vector<double> U_star;
-        U_star.resize(N);
-
-        for(int i=0; i<N; ++i) {
-            U_star[i] = Un[i] + this->_dt*bnp1[i];
-        }
-
-        //Unp1 = _lin->LU(A_star, U_star);
-        Unp1 = _lin->BiCGStab(A_star, U_star, 10000, 1e-6); 
-    */
-
-    //Without stocking
     std::vector<double> U_star;
     U_star.resize(N);
 
-    for(int i=0; i<N; ++i) {
-        U_star[i] = Un[i] + this->_dt*bnp1[i];
+    for (int i=0; i<=Nx; ++i) {
+        U_star[i] = this->_dt*bnp1[i];
+        U_star[i+Ny*(Nx+1)] = this->_dt*bnp1[i+Ny*(Nx+1)];
+    }
+
+    for(int j=1; j<Ny; ++j) {
+        U_star[j*(Nx+1)] = this->_dt*bnp1[j*(Nx+1)];
+        U_star[Nx+j*(Nx+1)] = this->_dt*bnp1[Nx+j*(Nx+1)];
+
+        for(int ij=1+j*(Nx+1); ij<Nx+j*(Nx+1); ++ij) {
+            U_star[ij] = Un[ij] + this->_dt*bnp1[ij];
+        }
     }
 
     Unp1 = _lin->Lap_BiCGStab(U_star, 10000, 1e-6);
@@ -77,36 +62,28 @@ std::vector<double> TimeScheme::EulerImplicite(const Matrix& A, const std::vecto
     return Unp1;
 }
 
-std::vector<double> TimeScheme::CranckNicholson(const Matrix& A, const std::vector<double> Un , const std::vector<double> bn, const std::vector<double> bnp1){
-
-    if(A.cols != static_cast<int>(Un.size()) || Un.size() != bn.size() || Un.size() != bnp1.size()) {
-        std::cerr << "Error: dimensions don't agree in Euler Explicit function!" << std::endl;
-        exit(EXIT_FAILURE);
-    }    
+std::vector<double> TimeScheme::CranckNicholson(const std::vector<double> Un , const std::vector<double> bn, const std::vector<double> bnp1){
 
     int N = Un.size();
 
     std::vector<double> Unp1;
     Unp1.resize(N);
 
-    //Identity matrix
-    Matrix I = Matrix::Identity(N);
-    Matrix A_star = (A.ScalarMultiply(this->_dt/2.)).AddMatrix(I);
     std::vector<double> U_star;
     U_star.resize(N);
 
-    U_star = ((A.ScalarMultiply(-this->_dt/2.)).AddMatrix(I)).MatrixVectorProduct(Un);
+    U_star = _ssch->Lap_MatVectProduct(_data, Un, 1);
 
     for(int i=0; i<N; ++i) {
         U_star[i] += this->_dt/2.*(bnp1[i]+bn[i]);
     }
 
-    Unp1 = _lin->BiCGStab(A_star, U_star, 10000, 1e-6);
+    Unp1 = _lin->Lap_BiCGStab(U_star, 10000, 1e-6);
 
     return Unp1;
 }
 
-std::vector<double> TimeScheme::Advance(const Matrix& A, const std::vector<double> Un, const double tn) 
+std::vector<double> TimeScheme::Advance(const std::vector<double> Un, const double tn) 
 {
     int N = Un.size();
     std::vector<double> Unp1;
@@ -120,13 +97,13 @@ std::vector<double> TimeScheme::Advance(const Matrix& A, const std::vector<doubl
         case 1:
             Sn.resize(N);
             Sn = _ssch->SourceTerme(_data, _fct, tn);
-            Unp1 = this->EulerExplicite(A, Un, Sn);
+            Unp1 = this->EulerExplicite(Un, Sn);
             break;
 
         case 2:
             Snp1.resize(N);
             Snp1 = _ssch->SourceTerme(_data, _fct, tnp1);
-            Unp1 = this->EulerImplicite(A, Un, Snp1);
+            Unp1 = this->EulerImplicite(Un, Snp1);
             break;
             
         case 3:
@@ -134,7 +111,7 @@ std::vector<double> TimeScheme::Advance(const Matrix& A, const std::vector<doubl
             Snp1.resize(N);
             Sn = _ssch->SourceTerme(_data, _fct, tn);
             Snp1 = _ssch->SourceTerme(_data, _fct, tnp1);
-            Unp1 = this->CranckNicholson(A, Un, Sn, Snp1);
+            Unp1 = this->CranckNicholson(Un, Sn, Snp1);
             break;
         
         default:
@@ -179,14 +156,18 @@ void TimeScheme::SaveSol(const std::vector<double>& sol, const std::string& path
         solution << "POINT_DATA " << _data->Get_Nx()*_data->Get_Ny() << std::endl;
         solution << "SCALARS sol float" << std::endl;
         solution << "LOOKUP_TABLE default" << std::endl;
-        for(int j=0; j<_data->Get_Ny(); ++j)
+        for(int j=0; j<=_data->Get_Ny(); ++j)
         {
-            for(int i=0; i<_data->Get_Nx(); ++i)
+            for(int i=0; i<=_data->Get_Nx(); ++i)
             {
-                solution << sol[i+j*_data->Get_Nx()] << " ";
+                solution << sol[i+j*(_data->Get_Nx()+1)] << " ";
             }
             solution << std::endl;
         }
+        // int N = sol.size();
+        // for(int l=0; l<N; ++l) {
+        //     solution << sol[l] << " ";
+        // }
         solution.close();
     }
     else {

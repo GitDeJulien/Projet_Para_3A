@@ -32,10 +32,10 @@ class SpaceScheme {
         std::vector<double> Initialize(Data* data, Function* function);
 
         //Building the general Matrix M depending on the scheme
-        Matrix BuildMatrix(Data* data);
+        // Matrix BuildMatrix(Data* data);
 
         //Imediatly do the Matrix vector product with the Laplacian matrix
-        std::vector<double> Lap_MatVectProduct(Data* data, std::vector<double> U);
+        std::vector<double> Lap_MatVectProduct(Data* data, std::vector<double> U, int expl_impl);
 
         //Building the Source terme S depending on the border conditions
         std::vector<double> SourceTerme(Data* data, Function* function, const double t);

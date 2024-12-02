@@ -1,13 +1,13 @@
 #space
 Lx = 1
-Nx = 50
+Nx = 10
 Ly = 1
-Ny = 50
+Ny = 10
 
 #time
 t0 = 0.0
 niter = 10
-dt = 1
+dt = 1.
 cfl = 0.8
 
 

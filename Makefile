@@ -14,8 +14,9 @@ exec:
 	./source/run "./input/data.dat"
 
 clean:
-	rm -f output/*.dat
-	rm -f output/Implicite_Euler_cas2/*.vtk
+
+	rm -f output/Implicite_Euler_cas1/*.vtk
+	rm -f output/Explicite_Euler_cas1/*.vtk
 
 clear:
 	rm -f $(TARGET)

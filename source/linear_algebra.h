@@ -35,8 +35,6 @@ class LinearAlgebra {
     //Resolve the linear systeme AX=b with LU decomposition and backward, forward methods
     std::vector<double> LU(const Matrix& A, const std::vector<double> b);
 
-    //Resolve the linear systeme AX=b with the Bi-Conjugate Gradient Stabilised methode
-    std::vector<double> BiCGStab(const Matrix& A, const std::vector<double> b, int maxIterations, double tol);
 
     //Resolve the linear systeme directly with the Laplacian matrix-vector product
     std::vector<double> Lap_BiCGStab(const std::vector<double> b, int maxIterations, double tol);

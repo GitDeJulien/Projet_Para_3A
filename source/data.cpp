@@ -67,8 +67,8 @@ Data::Data(std::string file_name)
 
     file.close();
 
-    this->_hx = this->_Lx / (this->_Nx+1);
-    this->_hy = this->_Ly / (this->_Ny+1);
+    this->_hx = this->_Lx / (this->_Nx);
+    this->_hy = this->_Ly / (this->_Ny);
 
     if (this->_key_TimeScheme==1){ //Euler explicite => CFL
         this->_dt = this->_cfl*pow(this->_hy,2)*pow(this->_hx,2)/(2*this->_diffusionCoeff*(pow(this->_hx,2)+pow(this->_hy,2)));

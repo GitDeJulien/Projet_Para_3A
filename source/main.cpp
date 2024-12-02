@@ -34,7 +34,6 @@ int main(int argc, char** argv) {
     //Pointer to Linear Algebra class
     LinearAlgebra* lin = new LinearAlgebra(ssch, data);
 
-
     //Pointer to Time Scheme class
     TimeScheme* tsch = new TimeScheme(data, lin, function, ssch);
 
@@ -47,15 +46,14 @@ int main(int argc, char** argv) {
 
     Nx = data->Get_Nx();
     Ny = data->Get_Ny();
-    N = Nx*Ny;
+    N = (Nx+1)*(Ny+1);
 
-    Matrix A(N,N);
     std::vector<double> Un;
     std::vector<double> Unp1;
     std::vector<double> Sn;
 
     //Laplacian matrix discretisation
-    A = ssch->BuildMatrix(data);
+    //A = ssch->BuildMatrix(data);
 
     //Initial solution
     Un = ssch->Initialize(data, function);
@@ -71,32 +69,36 @@ int main(int argc, char** argv) {
 
     std::vector<double> U_exact(N,0.0);
     double error(0.0);
-    for(int i=1; i<=Nx; ++i){
-        for(int j=1; j<=Ny; ++j){
-            int l = (j-1)*Nx + (i-1);
+
+    //Exact sol
+    for(int i=0; i<Nx; ++i){
+        for(int j=0; j<Ny; ++j){
+            int l = j*(Nx+1) + i;
             double x = i*data->Get_hx();
             double y = j*data->Get_hy();
             U_exact[l] = function->ExactSolution(data, x, y);
         }
     }
 
+    //time loop
     for(int iter = 1; iter<nb_iteration; ++iter) {
 
         //Advance of a time step with the chosen time scheme
-        Unp1 = tsch->Advance(A, Un, tn);
+        Unp1 = tsch->Advance(Un, tn);
 
         //Download result in vtk files
         tsch->SaveSol(Unp1, data->Get_outputPath(), iter);
 
+
         //Error computation
         for (int i=0; i<N; ++i){
-            error += abs(Unp1[i] - U_exact[i]);
+            error += fabs(Unp1[i] - U_exact[i])*fabs(Unp1[i] - U_exact[i]);
         }
 
         //Update
         Un = Unp1;
         tn += dt;
-        std::cout << "tn: " << tn << ", " << "error: " << error << std::endl;
+        std::cout << "tn: " << tn << ", " << "error: " << sqrt(error)/N << std::endl;
         error = 0.0;
     }
 
