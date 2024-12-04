@@ -15,6 +15,7 @@ class Data {
         double _Ny;
         double _hx;
         double _hy;
+        double _N_pts;
 
         //Time
         double _t0;
@@ -34,6 +35,9 @@ class Data {
         int _key_LeftBoundCond;
         int _key_DownBoundCond;
         int _key_UpBoundCond;
+
+        //Boundary condition for Schwarz method
+        int _key_Schwarz_Bounds;
 
         //Source terme key
         int _key_SourceTerme;
@@ -61,6 +65,7 @@ class Data {
         const double & Get_Ly() const {return _Ly;};
         const double & Get_Nx() const {return _Nx;};
         const double & Get_Ny() const {return _Ny;};
+        const double & Get_N_pts() const {return _N_pts;};
         const double & Get_hx() const {return _hx;};
         const double & Get_hy() const {return _hy;};
         const double & Get_t0() const {return _t0;};
@@ -74,6 +79,7 @@ class Data {
         const int & Get_key_LeftBoundCond() const {return _key_LeftBoundCond;};
         const int & Get_key_UpBoundCond() const {return _key_UpBoundCond;};
         const int & Get_key_DownBoundCond() const {return _key_DownBoundCond;};
+        const int & Get_key_Schwarz_Bounds() const {return _key_Schwarz_Bounds;};
         const int & Get_key_SourceTerme() const {return _key_SourceTerme;};
         const int & Get_key_InitialCondition() const {return _key_InitialCondition;};
         const std::string & Get_outputPath() const {return _outputPath;};

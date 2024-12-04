@@ -53,6 +53,7 @@ Data::Data(std::string file_name)
             else if (key == "key_LeftBoundCond") this->_key_LeftBoundCond = int_value;
             else if (key == "key_UpBoundCond") this->_key_UpBoundCond = int_value;
             else if (key == "key_DownBoundCond") this->_key_DownBoundCond = int_value;
+            else if (key == "key_Schwarz_Bounds") this->_key_Schwarz_Bounds = int_value;
             else if (key == "key_SourceTerme") this->_key_SourceTerme = int_value;
             else if (key == "key_InitialCondition") this->_key_InitialCondition = int_value;
             else if (key == "outputPath") this->_outputPath = line.substr(equal_pos + 2).c_str();
@@ -68,6 +69,7 @@ Data::Data(std::string file_name)
 
     this->_hx = this->_Lx / (this->_Nx+1);
     this->_hy = this->_Ly / (this->_Ny+1);
+    this->_N_pts = (this->_Nx)*(this->_Ny);
 
     if (this->_key_TimeScheme==1){ //Euler explicite => CFL
         this->_dt = this->_cfl*pow(this->_hy,2)*pow(this->_hx,2)/(2*this->_diffusionCoeff*(pow(this->_hx,2)+pow(this->_hy,2)));

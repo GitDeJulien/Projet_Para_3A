@@ -11,66 +11,56 @@ TimeScheme::TimeScheme(Data* data, LinearAlgebra* lin, Function* fct, SpaceSchem
 
 }
 
-std::vector<double> TimeScheme::EulerExplicite(const Matrix& A, const std::vector<double> Un , const std::vector<double> bn)
+std::vector<double> TimeScheme::EulerExplicite(const std::vector<double> Un , const std::vector<double> bn)
 {
-    if(A.cols != static_cast<int>(Un.size()) || Un.size() != bn.size()) {
-        std::cerr << "Error: dimensions don't agree in Euler Explicit function!" << std::endl;
-        exit(EXIT_FAILURE);
+    if (Un.size() != bn.size()) {
+        std::cout << "Error: Un and bn have differed shape!";
     }
 
     int N = Un.size();
 
-    std::vector<double> Unp1;
+    std::vector<double> Unp1, H;
     Unp1.resize(N);
+    H.resize(N);
 
-    //Identity matrix
-    Matrix I = Matrix::Identity(N);
+    H = _ssch->Lap_MatVectProduct(_data, Un);
 
-    Unp1 = ((A.ScalarMultiply(-this->_dt)).AddMatrix(I)).MatrixVectorProduct(Un);
-
-    for(int i=0; i<N; ++i) {
-        Unp1[i] += this->_dt*bn[i];
+    for(int l=0; l<N; ++l) {
+        Unp1[l] = Un[l] - this->_dt*H[l] + this->_dt*bn[l];
     }
 
     return Unp1;
 
 }
 
-std::vector<double> TimeScheme::EulerImplicite(const Matrix& A, const std::vector<double> Un , const std::vector<double> bnp1)
+std::vector<double> TimeScheme::EulerImplicite(const std::vector<double> Un , const std::vector<double> bnp1)
 {
-
-    if(A.cols != static_cast<int>(Un.size()) || Un.size() != bnp1.size()) {
-        std::cerr << "Error: dimensions don't agree in Euler Explicit function!" << std::endl;
-        exit(EXIT_FAILURE);
+    if (Un.size() != bnp1.size()) {
+        std::cout << "Error: Un and bn have differed shape!";
     }
 
     int N = Un.size();
 
-    std::vector<double> Unp1;
+    std::vector<double> Unp1, H;
     Unp1.resize(N);
 
-    //Identity matrix
-    Matrix I = Matrix::Identity(N);
-    Matrix A_star = (A.ScalarMultiply(this->_dt)).AddMatrix(I);
     std::vector<double> U_star;
     U_star.resize(N);
 
-    for(int i=0; i<N; ++i) {
-        U_star[i] = Un[i] + this->_dt*bnp1[i];
+    for(int l=0; l<N; ++l) {
+        U_star[l] = Un[l] + this->_dt*bnp1[l];
     }
 
-    //Unp1 = _lin->LU(A_star, U_star);
-    Unp1 = _lin->BiCGStab(A_star, U_star, 10000, 1e-6);
+    Unp1 = _lin->Lap_BiCGStab(U_star, 10000, 1e-6);
 
     return Unp1;
 }
 
-std::vector<double> TimeScheme::CranckNicholson(const Matrix& A, const std::vector<double> Un , const std::vector<double> bn, const std::vector<double> bnp1){
+std::vector<double> TimeScheme::CranckNicholson(const std::vector<double> Un , const std::vector<double> bn, const std::vector<double> bnp1){
 
-    if(A.cols != static_cast<int>(Un.size()) || Un.size() != bn.size() || Un.size() != bnp1.size()) {
-        std::cerr << "Error: dimensions don't agree in Euler Explicit function!" << std::endl;
-        exit(EXIT_FAILURE);
-    }    
+    if (Un.size() != bn.size()) {
+        std::cout << "Error: Un and bn have differed shape!";
+    }
 
     int N = Un.size();
 
@@ -78,43 +68,42 @@ std::vector<double> TimeScheme::CranckNicholson(const Matrix& A, const std::vect
     Unp1.resize(N);
 
     //Identity matrix
-    Matrix I = Matrix::Identity(N);
-    Matrix A_star = (A.ScalarMultiply(this->_dt/2.)).AddMatrix(I);
+
     std::vector<double> U_star;
     U_star.resize(N);
 
-    U_star = ((A.ScalarMultiply(-this->_dt/2.)).AddMatrix(I)).MatrixVectorProduct(Un);
+    Unp1 = _ssch->Lap_MatVectProduct(_data, Un); //il manque un 1/2 à ajouter dans le produit mat-vect
 
-    for(int i=0; i<N; ++i) {
-        U_star[i] += this->_dt/2.*(bnp1[i]+bn[i]);
+    for(int l=0; l<N; ++l) {
+        U_star[l] += this->_dt/2.*(bnp1[l]+bn[l]);
     }
 
-    Unp1 = _lin->BiCGStab(A_star, U_star, 10000, 1e-6);
+    Unp1 = _lin->Lap_BiCGStab(U_star, 10000, 1e-6); //de même ici
 
     return Unp1;
 }
 
-std::vector<double> TimeScheme::Advance(const Matrix& A, const std::vector<double> Un, const double tn) 
+std::vector<double> TimeScheme::Advance(const std::vector<double> Un, const double tn) 
 {
     int N = Un.size();
     std::vector<double> Unp1;
     std::vector<double> Sn;
     std::vector<double> Snp1;
     Unp1.resize(N);
-    double tnp1 = tn + _data->Get_dt();
+    double tnp1 = tn + this->_dt;
 
     switch (_data->Get_TimeScheme())
         {
         case 1:
             Sn.resize(N);
             Sn = _ssch->SourceTerme(_data, _fct, tn);
-            Unp1 = this->EulerExplicite(A, Un, Sn);
+            Unp1 = this->EulerExplicite(Un, Sn);
             break;
 
         case 2:
             Snp1.resize(N);
             Snp1 = _ssch->SourceTerme(_data, _fct, tnp1);
-            Unp1 = this->EulerImplicite(A, Un, Snp1);
+            Unp1 = this->EulerImplicite(Un, Snp1);
             break;
             
         case 3:
@@ -122,7 +111,7 @@ std::vector<double> TimeScheme::Advance(const Matrix& A, const std::vector<doubl
             Snp1.resize(N);
             Sn = _ssch->SourceTerme(_data, _fct, tn);
             Snp1 = _ssch->SourceTerme(_data, _fct, tnp1);
-            Unp1 = this->CranckNicholson(A, Un, Sn, Snp1);
+            Unp1 = this->CranckNicholson(Un, Sn, Snp1);
             break;
         
         default:
@@ -152,26 +141,21 @@ void TimeScheme::SaveSol(const std::vector<double>& sol, const std::string& path
     solution.open(n_file);
     if (solution.is_open()){
         solution << "# vtk DataFile Version 3.0" << std::endl;
-        // solution << "#key time scheme: " << _data->Get_TimeScheme() << std::endl;
-        // solution << "#key space scheme: " << _data->Get_SpaceScheme() << std::endl;
-        // solution << "#key left/right boundary condition: " << _data->Get_key_LeftRightBoundCond() << std::endl;
-        // solution << "#key up/down boundary condition: " << _data->Get_key_UpDownBoundCond() << std::endl;
-        // solution << "#key initial condition: " << _data->Get_key_InitialCondition() << std::endl;
-        // solution << "#key source terme: " << _data->Get_key_SourceTerme() << std::endl;
         solution << "sol" << std::endl;
         solution << "ASCII" << std::endl;
         solution << "DATASET STRUCTURED_POINTS" << std::endl;
         solution << "DIMENSIONS " << _data->Get_Nx() << " " << _data->Get_Ny() << " " << 1 << std::endl;
         solution << "ORIGIN " << 0 << " " << 0 << " " << 0 << std::endl;
         solution << "SPACING " << _data->Get_hx() << " " << _data->Get_hy() << " " << 1 << std::endl;;
-        solution << "POINT_DATA " << _data->Get_Nx()*_data->Get_Ny() << std::endl;
+        solution << "POINT_DATA " << _data->Get_N_pts() << std::endl;
         solution << "SCALARS sol float" << std::endl;
         solution << "LOOKUP_TABLE default" << std::endl;
-        for(int j=0; j<_data->Get_Ny(); ++j)
+        for(int j=1; j<=_data->Get_Ny(); ++j)
         {
-            for(int i=0; i<_data->Get_Nx(); ++i)
+            for(int i=1; i<=_data->Get_Nx(); ++i)
             {
-                solution << sol[i+j*_data->Get_Nx()] << " ";
+                int l = _ssch->index_MatToVect(_data, i, j);
+                solution << sol[l] << " ";
             }
             solution << std::endl;
         }

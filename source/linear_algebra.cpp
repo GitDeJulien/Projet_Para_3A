@@ -4,7 +4,10 @@
 #include "linear_algebra.h"
 
 
-LinearAlgebra::LinearAlgebra(){};
+LinearAlgebra::LinearAlgebra(Data* data, SpaceScheme* ssch){
+    _data= data;
+    _ssch = ssch;
+};
 
 std::vector<double> LinearAlgebra::LU(const Matrix& A, const std::vector<double> b){
 
@@ -60,7 +63,7 @@ std::vector<double> LinearAlgebra::LU(const Matrix& A, const std::vector<double>
 
 }
 
-std::vector<double> LinearAlgebra::BiCGStab(const Matrix& A, const std::vector<double> b, int maxIterations = 1000, double tol = 1e-6){
+std::vector<double> LinearAlgebra::Lap_BiCGStab(const std::vector<double> b, int maxIterations = 1000, double tol = 1e-6){
     
     int N = b.size();
 
@@ -86,7 +89,12 @@ std::vector<double> LinearAlgebra::BiCGStab(const Matrix& A, const std::vector<d
         }
         if (std::abs(rho_prev) < tol) break;       // Breakdown check
         
-        v = A.MatrixVectorProduct(p);
+        //v = A.MatrixVectorProduct(p);
+        std::vector<double> hh(N);
+        hh = _ssch->Lap_MatVectProduct(_data, p);
+        for (int l=0; l<N; ++l) {
+            v[l] = p[l] + _data->Get_dt()*hh[l];
+        }
         alpha = rho / dot(r0, v);
         
         for (int i = 0; i < N; ++i){
@@ -100,7 +108,11 @@ std::vector<double> LinearAlgebra::BiCGStab(const Matrix& A, const std::vector<d
             break;
         }
         
-        t = A.MatrixVectorProduct(s);
+        //t = A.MatrixVectorProduct(s);
+        hh = _ssch->Lap_MatVectProduct(_data, s);
+        for (int l=0; l<N; ++l) {
+            t[l] = s[l] + _data->Get_dt()*hh[l];
+        }
         omega = dot(t, s) / dot(t, t);
         
         for (int i = 0; i < N; ++i)

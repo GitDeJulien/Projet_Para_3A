@@ -28,11 +28,11 @@ int main(int argc, char** argv) {
     //Pointer to Function class
     Function* function = new Function();
 
-    //Pointer to Linear Algebra class
-    LinearAlgebra* lin = new LinearAlgebra();
-
     //Pointer to Space Scheme class
-    SpaceScheme* ssch = new SpaceScheme();
+    SpaceScheme* ssch = new SpaceScheme(data);
+
+    //Pointer to Linear Algebra class
+    LinearAlgebra* lin = new LinearAlgebra(data, ssch);
 
     //Pointer to Time Scheme class
     TimeScheme* tsch = new TimeScheme(data, lin, function, ssch);
@@ -42,75 +42,60 @@ int main(int argc, char** argv) {
 
     int Nx(0);
     int Ny(0);
-    int N(0);
+    int N_pts(0);
 
     Nx = data->Get_Nx();
     Ny = data->Get_Ny();
-    N = Nx*Ny;
+    N_pts = data->Get_N_pts();
 
-    Matrix A(N,N);
-    std::vector<double> Un;
-    std::vector<double> Unp1;
-    std::vector<double> Sn;
+    std::vector<double> Un(N_pts);
+    std::vector<double> Unp1(N_pts);
+    std::vector<double> Sn(N_pts);
 
-    //Laplacian matrix discretisation
-    A = ssch->BuildMatrix(data);
+    std::cout << "N_pts: " << N_pts << std::endl;
 
     //Initial solution
     Un = ssch->Initialize(data, function);
-
     Unp1 = Un;
 
     tsch->SaveSol(Un, data->Get_outputPath(), 0);
-
 
     double tn = data->Get_t0();
     double nb_iteration = data->Get_niter();
     double dt = data->Get_dt();
 
-    std::vector<double> U_exact(N,0.0);
+    std::vector<double> U_exact(N_pts);
     double error(0.0);
     for(int i=1; i<=Nx; ++i){
         for(int j=1; j<=Ny; ++j){
-            int l = (j-1)*Nx + (i-1);
+            int l = ssch->index_MatToVect(data, i, j);
             double x = i*data->Get_hx();
             double y = j*data->Get_hy();
             U_exact[l] = function->ExactSolution(data, x, y);
         }
     }
+    tsch->SaveSol(U_exact, "output/Exact1", 0);
 
+    std::cout << "Starting time loop" << std::endl;
     for(int iter = 1; iter<nb_iteration; ++iter) {
 
         //Advance of a time step with the chosen time scheme
-        Unp1 = tsch->Advance(A, Un, tn);
+        Unp1 = tsch->Advance(Un, tn);
 
         //Download result in vtk files
         tsch->SaveSol(Unp1, data->Get_outputPath(), iter);
 
         //Error computation
-        for (int i=0; i<N; ++i){
-            error += abs(Unp1[i] - U_exact[i]);
+        for (int l=0; l<N_pts; ++l){
+            error += pow(fabs(Unp1[l] - U_exact[l]),2);
         }
 
         //Update
         Un = Unp1;
         tn += dt;
-        std::cout << "tn: " << tn << ", " << "error: " << error << std::endl;
+        std::cout << "tn: " << tn << ", " << "error: " << 1./N_pts*sqrt(error) << std::endl;
         error = 0.0;
     }
-
-
-
-    tsch->SaveSol(U_exact, "output/Exact2", 0);
-
-    /*TODO :
-
-        - Commencer à réfléchir à une stratégie de parallélisation
-    */
-
-    //Error
-
-
 
     //Pointer deletion
     delete data, delete function, delete lin, delete ssch, delete tsch;

@@ -1,13 +1,13 @@
 #space
 Lx = 1
-Nx = 50
+Nx = 100
 Ly = 1
-Ny = 50
+Ny = 100
 
 #time
 t0 = 0.0
 niter = 10
-dt = 1
+dt = 1.
 cfl = 0.8
 
 
@@ -21,19 +21,22 @@ key_space_scheme = 1
 D = 1.0
 
 #Boundary conditions (1: edge=0, 2: edge=edge=sin(x)+cos(y) , 3: edge=1)
-key_RightBoundCond = 1
-key_LeftBoundCond = 1
-key_UpBoundCond = 1
-key_DownBoundCond = 1
+key_RightBoundCond = 2
+key_LeftBoundCond = 2
+key_UpBoundCond = 2
+key_DownBoundCond = 2
+
+#Boundary condition for Schwarz method (1: Derichlet, 2: Robin)
+key_Schwarz_Bounds = 1
 
 #Source terme (1: f=2*(x-x*x+y-y*y) , 2: f=sin(x)+cos(y), 3: f=exp(-(x-Lx/2)^2)*exp(-(y-_Ly/2)^2)*cos(pi/2*t))
-key_SourceTerme = 1
+key_SourceTerme = 2
 
 #Initial condition (1: u0=20*ExactSol(x,y,0), 2: u0=cos(x), 3: u0=...)
-key_InitialCondition = 1
+key_InitialCondition = 2
 
 #Output path
-outputPath = output/Implicite_Euler_cas1
+outputPath = output/Implicite_Euler_cas2
 
 
 #--END--#

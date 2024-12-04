@@ -14,13 +14,16 @@ class SpaceScheme {
 
     private:
 
-    double* _sol0; 
-    double* _Matrix;
+    Data* _data;
+
+    int _Nx, _Ny, _N_pts;
+    double _hx, _hy;
+    double _D, _dt;
 
     public:
 
         //Constructor
-        SpaceScheme();
+        SpaceScheme(Data* data);
 
         //Transforme matrix index (i,j) in vector index l
         int index_MatToVect(Data* data, const int i, const int j);
@@ -32,7 +35,10 @@ class SpaceScheme {
         std::vector<double> Initialize(Data* data, Function* function);
 
         //Building the general Matrix M depending on the scheme
-        Matrix BuildMatrix(Data* data);
+        // Matrix BuildMatrix(Data* data);
+
+        //Mat Vect product with the Laplacian matrix
+        std::vector<double> Lap_MatVectProduct(Data* data, std::vector<double> U);
 
         //Building the Source terme S depending on the border conditions
         std::vector<double> SourceTerme(Data* data, Function* function, const double t);
