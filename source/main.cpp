@@ -107,6 +107,20 @@ int main(int argc, char** argv) {
 //########## TEST ############//
 //############################//
 
+/* TEST PROD MAT-VECT
+    Matrix matrix = ssch->BuildMatrix(data);
+    std::cout << matrix.rows << matrix.cols << std::endl;
+    std::vector<double> U_test(N_pts, 1.0);
+    std::vector<double> U_test2(N_pts, 1.0);
+    U_test = ssch->Lap_MatVectProduct(data, U_test);
+    U_test2 = matrix.MatrixVectorProduct(U_test2);
+
+    std::cout << "U_test - U_test2" << std::endl;
+    for (int l=0; l<N_pts; ++l) {
+        std::cout << U_test[l] - U_test2[l] << std::endl;
+    }
+*/
+
 /*
 TEST MATRIX CLASS
 

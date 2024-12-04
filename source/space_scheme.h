@@ -35,7 +35,7 @@ class SpaceScheme {
         std::vector<double> Initialize(Data* data, Function* function);
 
         //Building the general Matrix M depending on the scheme
-        // Matrix BuildMatrix(Data* data);
+        Matrix BuildMatrix(Data* data);
 
         //Mat Vect product with the Laplacian matrix
         std::vector<double> Lap_MatVectProduct(Data* data, std::vector<double> U);

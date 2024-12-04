@@ -66,62 +66,62 @@ std::vector<double> SpaceScheme::Initialize(Data* data, Function* function)
     return U0;
 }
 
-// Matrix SpaceScheme::BuildMatrix(Data* data) 
-// {
-//     std::pair<int, int> indMat;
+Matrix SpaceScheme::BuildMatrix(Data* data) 
+{
+    std::pair<int, int> indMat;
 
-//     int Nx(0);
-//     int Ny(0);
+    int Nx(0);
+    int Ny(0);
 
-//     double alpha(0.0);
-//     double beta(0.0);
-//     double gamma(0.0);
+    double alpha(0.0);
+    double beta(0.0);
+    double gamma(0.0);
 
-//     Nx = data->Get_Nx();
-//     Ny = data->Get_Ny();
+    Nx = data->Get_Nx();
+    Ny = data->Get_Ny();
 
-//     int N = Nx*Ny;
+    int N = Nx*Ny;
 
-//     alpha = data->Get_diffusion_coeff()*(2/(data->Get_hx()*data->Get_hx()) + 2/(data->Get_hy()*data->Get_hy()));
-//     beta = - data->Get_diffusion_coeff()/(data->Get_hx()*data->Get_hx());
-//     gamma = - data->Get_diffusion_coeff()/(data->Get_hy()*data->Get_hy());
+    alpha = data->Get_diffusion_coeff()*(2/(data->Get_hx()*data->Get_hx()) + 2/(data->Get_hy()*data->Get_hy()));
+    beta = - data->Get_diffusion_coeff()/(data->Get_hx()*data->Get_hx());
+    gamma = - data->Get_diffusion_coeff()/(data->Get_hy()*data->Get_hy());
 
-//     Matrix matrix(N,N);
+    Matrix matrix(N,N);
 
-//     for (int I=0; I<N; ++I) {
-//         for (int J=0; J<N; ++J){
-//             matrix(I,J) = 0.0;
-//         }
-//     }
+    for (int I=0; I<N; ++I) {
+        for (int J=0; J<N; ++J){
+            matrix(I,J) = 0.0;
+        }
+    }
 
-//     if(data->Get_SpaceScheme() == 1){ //Laplacian centered discretisation
-//         for(int i=1; i<=Nx; ++i){
-//             for(int j=1; j<=Ny; ++j){
-//                 int l = this->index_MatToVect(data, i, j);
+    if(data->Get_SpaceScheme() == 1){ //Laplacian centered discretisation
+        for(int i=1; i<=Nx; ++i){
+            for(int j=1; j<=Ny; ++j){
+                int l = this->index_MatToVect(data, i, j);
 
-//                 matrix(l,l) = alpha;
-//                 if (i>1) {
-//                     matrix(l,l-1) = beta;
-//                 }
-//                 if (i<Nx){
-//                     matrix(l,l+1) = beta;
-//                 }
-//                 if (j>1) {
-//                     matrix(l,l-Nx) = gamma;
-//                 }
-//                 if (j<Ny) {
-//                     //matrix(l,l+Nx) = gamma;
-//                     matrix(l,l+Nx) = gamma;
-//                 }
-//             }
-//         }
-//     }
-//     else {
-//         std::cerr << "The Space Scheme key" << data->Get_SpaceScheme() << "is not define. Please change it in the 'input/data.dat' file" << std::endl;
-//         exit(EXIT_FAILURE);
-//     }
-//     return matrix;     
-// }
+                matrix(l,l) = alpha;
+                if (i>1) {
+                    matrix(l,l-1) = beta;
+                }
+                if (i<Nx){
+                    matrix(l,l+1) = beta;
+                }
+                if (j>1) {
+                    matrix(l,l-Nx) = gamma;
+                }
+                if (j<Ny) {
+                    //matrix(l,l+Nx) = gamma;
+                    matrix(l,l+Nx) = gamma;
+                }
+            }
+        }
+    }
+    else {
+        std::cerr << "The Space Scheme key" << data->Get_SpaceScheme() << "is not define. Please change it in the 'input/data.dat' file" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    return matrix;     
+}
 
 std::vector<double> SpaceScheme::Lap_MatVectProduct(Data* data, std::vector<double> U) {
 
@@ -145,12 +145,11 @@ std::vector<double> SpaceScheme::Lap_MatVectProduct(Data* data, std::vector<doub
 
     std::vector<double> U_res;
     U_res.resize(this->_N_pts);
-
+    int l(0);
     if(data->Get_SpaceScheme() == 1){ //Laplacian centered discretisation
         for(int i=1; i<=this->_Nx; ++i){
             for(int j=1; j<=this->_Ny; ++j){
-                int l = this->index_MatToVect(data, i, j);
-
+                l = this->index_MatToVect(data, i, j);
 
                 if(data->Get_key_Schwarz_Bounds() == 1){
 
