@@ -89,13 +89,13 @@ int main(int argc, char** argv) {
 
         //Error computation
         for (int i=0; i<N; ++i){
-            error += abs(Unp1[i] - U_exact[i]);
+            error += fabs(Unp1[i] - U_exact[i]);
         }
 
         //Update
         Un = Unp1;
         tn += dt;
-        std::cout << "tn: " << tn << ", " << "error: " << error << std::endl;
+        std::cout << "tn: " << tn << ", " << "error: " << 1./N*sqrt(error) << std::endl;
         error = 0.0;
     }
 
