@@ -23,10 +23,10 @@ std::vector<double> TimeScheme::EulerExplicite(const std::vector<double> Un , co
     Unp1.resize(N);
     H.resize(N);
 
-    H = _ssch->Lap_MatVectProduct(_data, Un);
+    H = _ssch->Lap_MatVectProduct(Un);
 
     for(int l=0; l<N; ++l) {
-        Unp1[l] = Un[l] - this->_dt*H[l] + this->_dt*bn[l];
+        Unp1[l] = H[l] + bn[l];
     }
 
     return Unp1;
@@ -48,7 +48,7 @@ std::vector<double> TimeScheme::EulerImplicite(const std::vector<double> Un , co
     U_star.resize(N);
 
     for(int l=0; l<N; ++l) {
-        U_star[l] = Un[l] + this->_dt*bnp1[l];
+        U_star[l] = Un[l] + bnp1[l];
     }
 
     Unp1 = _lin->Lap_BiCGStab(U_star, 10000, 1e-6);
@@ -72,7 +72,7 @@ std::vector<double> TimeScheme::CranckNicholson(const std::vector<double> Un , c
     std::vector<double> U_star;
     U_star.resize(N);
 
-    Unp1 = _ssch->Lap_MatVectProduct(_data, Un); //il manque un 1/2 à ajouter dans le produit mat-vect
+    Unp1 = _ssch->Lap_MatVectProduct(Un); //il manque un 1/2 à ajouter dans le produit mat-vect
 
     for(int l=0; l<N; ++l) {
         U_star[l] += this->_dt/2.*(bnp1[l]+bn[l]);
@@ -94,25 +94,27 @@ std::vector<double> TimeScheme::Advance(const std::vector<double> Un, const doub
 
     switch (_data->Get_TimeScheme())
         {
-        case 1:
-            Sn.resize(N);
-            Sn = _ssch->SourceTerme(_data, _fct, tn);
-            Unp1 = this->EulerExplicite(Un, Sn);
-            break;
+        // case 1:
+        //     Sn.resize(N);
+        //     Sn = _ssch->SourceTerme(_data, _fct, tn, Un);
+        //     //Unp1 = this->EulerExplicite(Un, Sn);
+        //     Unp1 = 
+        //     break;
 
         case 2:
             Snp1.resize(N);
-            Snp1 = _ssch->SourceTerme(_data, _fct, tnp1);
-            Unp1 = this->EulerImplicite(Un, Snp1);
+            Snp1 = _ssch->SourceTerme(tnp1, Un);
+            // Unp1 = this->EulerImplicite(Un, Snp1);
+            Unp1 = _lin->Lap_BiCGStab(Snp1, 10000, 1e-6);
             break;
             
-        case 3:
-            Sn.resize(N);
-            Snp1.resize(N);
-            Sn = _ssch->SourceTerme(_data, _fct, tn);
-            Snp1 = _ssch->SourceTerme(_data, _fct, tnp1);
-            Unp1 = this->CranckNicholson(Un, Sn, Snp1);
-            break;
+        // case 3:
+        //     Sn.resize(N);
+        //     Snp1.resize(N);
+        //     Sn = _ssch->SourceTerme(_data, _fct, tn, Un);
+        //     Snp1 = _ssch->SourceTerme(_data, _fct, tnp1, Un);
+        //     Unp1 = this->CranckNicholson(Un, Sn, Snp1);
+        //     break;
         
         default:
             std::cout << "The time scheme key " << _data->Get_TimeScheme() << " is not valid !" << std::endl;
@@ -154,7 +156,7 @@ void TimeScheme::SaveSol(const std::vector<double>& sol, const std::string& path
         {
             for(int i=1; i<=_data->Get_Nx(); ++i)
             {
-                int l = _ssch->index_MatToVect(_data, i, j);
+                int l = _ssch->index_MatToVect(i, j);
                 solution << sol[l] << " ";
             }
             solution << std::endl;

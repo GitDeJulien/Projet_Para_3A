@@ -76,7 +76,7 @@ std::vector<double> LinearAlgebra::Lap_BiCGStab(const std::vector<double> b, int
     double rho_prev = 0.0, beta = 0.0;
     
     double normB = norm(b);
-    if (normB < tol) return X; // If b is small enough, return X = 0
+    if (norm(r) < tol) return X; // If b is small enough, return X = 0
     
     p = r;           
     
@@ -90,11 +90,7 @@ std::vector<double> LinearAlgebra::Lap_BiCGStab(const std::vector<double> b, int
         if (std::abs(rho_prev) < tol) break;       // Breakdown check
         
         //v = A.MatrixVectorProduct(p);
-        std::vector<double> hh(N);
-        hh = _ssch->Lap_MatVectProduct(_data, p);
-        for (int l=0; l<N; ++l) {
-            v[l] = p[l] + _data->Get_dt()*hh[l];
-        }
+        v = _ssch->Lap_MatVectProduct(p);
         alpha = rho / dot(r0, v);
         
         for (int i = 0; i < N; ++i){
@@ -109,10 +105,7 @@ std::vector<double> LinearAlgebra::Lap_BiCGStab(const std::vector<double> b, int
         }
         
         //t = A.MatrixVectorProduct(s);
-        hh = _ssch->Lap_MatVectProduct(_data, s);
-        for (int l=0; l<N; ++l) {
-            t[l] = s[l] + _data->Get_dt()*hh[l];
-        }
+        t = _ssch->Lap_MatVectProduct(s);
         omega = dot(t, s) / dot(t, t);
         
         for (int i = 0; i < N; ++i)

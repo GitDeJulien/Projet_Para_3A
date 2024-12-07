@@ -26,10 +26,10 @@ int main(int argc, char** argv) {
     Data* data = new Data(filename);
 
     //Pointer to Function class
-    Function* function = new Function();
+    Function* function = new Function(data);
 
     //Pointer to Space Scheme class
-    SpaceScheme* ssch = new SpaceScheme(data);
+    SpaceScheme* ssch = new SpaceScheme(data, function);
 
     //Pointer to Linear Algebra class
     LinearAlgebra* lin = new LinearAlgebra(data, ssch);
@@ -40,13 +40,12 @@ int main(int argc, char** argv) {
     //Display all the parameters and conditions used for computation
     data->display_parameters();
 
-    int Nx(0);
-    int Ny(0);
-    int N_pts(0);
 
-    Nx = data->Get_Nx();
-    Ny = data->Get_Ny();
-    N_pts = data->Get_N_pts();
+    int Nx = data->Get_Nx();
+    int Ny = data->Get_Ny();
+    int N_pts = data->Get_N_pts();
+    double hx = data->Get_hx();
+    double hy = data->Get_hy();
 
     std::vector<double> Un(N_pts);
     std::vector<double> Unp1(N_pts);
@@ -55,8 +54,8 @@ int main(int argc, char** argv) {
     std::cout << "N_pts: " << N_pts << std::endl;
 
     //Initial solution
-    Un = ssch->Initialize(data, function);
-    Unp1 = Un;
+    //Un = ssch->Initialize();
+    //Unp1 = ssch->Initialize(data, function);
 
     tsch->SaveSol(Un, data->Get_outputPath(), 0);
 
@@ -66,21 +65,29 @@ int main(int argc, char** argv) {
 
     std::vector<double> U_exact(N_pts);
     double error(0.0);
-    for(int i=1; i<=Nx; ++i){
-        for(int j=1; j<=Ny; ++j){
-            int l = ssch->index_MatToVect(data, i, j);
-            double x = i*data->Get_hx();
-            double y = j*data->Get_hy();
-            U_exact[l] = function->ExactSolution(data, x, y);
-        }
+
+    for(int l=0; l<N_pts; ++l){
+
+        int j = l/Nx+1;
+        int i = l%Nx+1;
+        double x = i*hx;
+        double y = j*hy;
+
+        Un[l] = function->ExactSolution(x,y);
+        U_exact[l] = function->ExactSolution(x, y);
     }
+
     tsch->SaveSol(U_exact, "output/Exact1", 0);
 
     std::cout << "Starting time loop" << std::endl;
+    tn += dt;
     for(int iter = 1; iter<nb_iteration; ++iter) {
 
+        Sn = ssch->SourceTerme(tn+dt, Un);
+        Unp1 = lin->Lap_BiCGStab(Sn, 10000, 1e-6);
+
         //Advance of a time step with the chosen time scheme
-        Unp1 = tsch->Advance(Un, tn);
+        //Unp1 = tsch->Advance(Un, tn);
 
         //Download result in vtk files
         tsch->SaveSol(Unp1, data->Get_outputPath(), iter);
