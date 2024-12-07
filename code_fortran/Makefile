@@ -13,7 +13,7 @@ INCLUDE_DIR = ./include
 BUILD_DIR = ./build
 
 # Flags for debug and release builds
-DEBUG_FFLAGS = -g -O0 -Wall -Wextra
+DEBUG_FFLAGS = -g -O0 -Wall -Wextra -Werror
 RELEASE_FFLAGS = -O2 -Wall -Wextra -Werror
 
 # Automatically find all source files (needed to be in the good order in function of dependancies)
@@ -22,6 +22,7 @@ SRC_FILES = $(SRC_DIR)/mod_data.f90 \
 			$(SRC_DIR)/mod_scheme.f90 \
 			$(SRC_DIR)/linear_algebra.f90 \
 			$(SRC_DIR)/time_advance.f90 \
+			$(SRC_DIR)/mod_save_output.f90 \
 			$(SRC_DIR)/main.f90 \
 
 SUB_FILES = $(wildcard $(SUB_DIR)/*.f90)
@@ -85,6 +86,13 @@ clean:
 
 clear:
 	$(RM) ./output/*.dat
+	$(RM) ./output/dat/*.dat
+	$(RM) ./output/vtk/*.vtk
+	$(RM) ./output/dat/exact/*.dat
+	$(RM) ./output/vtk/exact/*.vtk
+
+
+
 
 
 

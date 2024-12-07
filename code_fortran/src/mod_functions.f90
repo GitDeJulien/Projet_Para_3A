@@ -22,24 +22,27 @@ module functions_mod
         SELECT CASE(df%cas)
 
         CASE(1)
-            res = 20*ExactSolution(df, x, y)
+            res = 20*ExactSolution(df, x, y, 0.0_pr)
 
         CASE(2)
             res = cos(x)
 
+        CASE(3)
+            res = sin(pi*x)*sin(pi*y)
+
         CASE DEFAULT
-            res = exp(-x + y)
+            res = exp(x-y)
 
         END SELECT
 
     end function InitialCondition
 
 
-    function ExactSolution(df, x, y) result(res)
+    function ExactSolution(df, x, y, t) result(res)
 
         !In
         type(DataType), intent(in) :: df
-        real(pr), intent(in)       :: x, y
+        real(pr), intent(in)       :: x, y, t
 
         !Out
         real(pr) :: res
@@ -52,6 +55,9 @@ module functions_mod
 
         CASE(2)
             res = sin(x) + cos(y)
+
+        CASE(3)
+            res = sin(pi*x)*sin(pi*y)*exp(-t)
 
         CASE DEFAULT
             print*,"No analytical solution computed"
@@ -79,8 +85,7 @@ module functions_mod
             res = sin(x) + cos(y)
 
         CASE(3)
-            res = exp(-(x-df%Lx/2.)*(x-df%Lx/2.))*&
-            exp(-(y-df%Ly/2.)*(y-df%Ly/2.))*cos(pi/2.*t)
+            res = (2*pi*df%D - 1) * sin(pi*x)*sin(pi*y) * exp(-t)
 
         CASE DEFAULT
             print*,"This case is not allowed"
@@ -108,7 +113,7 @@ module functions_mod
             res = sin(x) + cos(y)
 
         CASE(3)
-            res = 1.0_pr
+            res = 0.0_pr
 
         CASE DEFAULT
             print*,"This case is not allowed"
@@ -136,7 +141,7 @@ module functions_mod
             res = sin(x) + cos(y)
 
         CASE(3)
-            res = 1.0_pr
+            res = 0.0_pr
 
         CASE DEFAULT
             print*,"This case is not allowed"

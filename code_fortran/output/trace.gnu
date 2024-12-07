@@ -18,9 +18,9 @@ set palette defined ( 0 '#F7FBFF',\
 set size ratio -1
 
 # si affichage 3D, force l'étendue de l'axe des z. A changer selon les cas.
-set zrange [-0.2:1.2]
+#set zrange [-0.2:1.2]
 # si affichage 3D, fixe le point de vue. A changer selon les cas.
-set view 90,90
+set view 98,140
 
 #pour faire un gif
 set term gif animate 
