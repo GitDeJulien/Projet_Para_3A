@@ -11,14 +11,15 @@ class Data {
         //Space
         double _Lx;
         double _Ly;
-        double _Nx;
-        double _Ny;
+        int _Nx;
+        int _Ny;
         double _hx;
         double _hy;
+        int _N_pts;
 
         //Time
         double _t0;
-        double _niter;
+        int _niter;
         double _dt;
         double _cfl;
         double _tfinal;
@@ -62,12 +63,13 @@ class Data {
         const double & Get_diffusion_coeff() const {return _diffusionCoeff;};
         const double & Get_Lx() const {return _Lx;};
         const double & Get_Ly() const {return _Ly;};
-        const double & Get_Nx() const {return _Nx;};
-        const double & Get_Ny() const {return _Ny;};
+        const int & Get_Nx() const {return _Nx;};
+        const int & Get_Ny() const {return _Ny;};
+        const int & Get_N_pts() const {return _N_pts;};
         const double & Get_hx() const {return _hx;};
         const double & Get_hy() const {return _hy;};
         const double & Get_t0() const {return _t0;};
-        const double & Get_niter() const {return _niter;};
+        const int & Get_niter() const {return _niter;};
         const double & Get_dt() const {return _dt;};
         const double & Get_cfl() const {return _cfl;};
         const double & Get_tfinal() const {return _tfinal;};

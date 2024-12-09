@@ -1,0 +1,19 @@
+#Grouping data
+
+[SPACE] (2D)
+Lx = 1.0
+Nx = 320
+Ly = 1.0
+Ny = 320
+
+[TIME] (implicite scheme)
+t0 = 0.0
+niter = 20
+dt = 0.5
+cfl = 0.8
+
+[Diffusion coefficient]
+D = 1.0
+
+[CAS TEST]
+cas = 3

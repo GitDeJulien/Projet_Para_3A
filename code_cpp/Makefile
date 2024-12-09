@@ -1,3 +1,4 @@
+TIME = time
 CPP = g++
 CFLAGS = -Wall -Wextra -O3 -std=c++14
 
@@ -11,12 +12,11 @@ $(TARGET): $(SRCS)
 
 
 exec:
-	./source/run "./input/data.dat"
+	time ./source/run "./input/data.dat"
 
 clean:
-
-	rm -f output/Implicite_Euler_cas1/*.vtk
-	rm -f output/Explicite_Euler_cas1/*.vtk
+	rm -f output/*.dat
+	rm -f output/*/*.vtk
 
 clear:
 	rm -f $(TARGET)
