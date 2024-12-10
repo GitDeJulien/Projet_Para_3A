@@ -60,6 +60,7 @@ module functions_mod
             res = sin(pi*x)*sin(pi*y)*exp(-t)
 
         CASE DEFAULT
+            res = -1._pr
             print*,"No analytical solution computed"
 
         END SELECT

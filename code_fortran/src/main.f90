@@ -3,38 +3,52 @@ program DiffusionEquation
     use functions_mod
     use time_scheme
     use save_output_mod
+    use charge_mod
+    use MPI
     implicit none
 
     type(DataType)                      :: df
-    integer                             :: l, i, j, t_iter, io
-    real(pr)                            :: x, y, tn
+    integer                             :: t_iter, io
+    real(pr)                            :: tn
     real(pr), dimension(:), allocatable :: Un, Unp1, Uexact
 
-    call display_toml_file("./data/data.toml")
+    ! MPI variables
+    integer :: ierr!, rank, size_p, jbeg, jend
 
+    ! Initialize MPI
+    call MPI_Init(ierr)
+
+    ! Get the rank (ID) of the current process
+    call MPI_Comm_rank(MPI_COMM_WORLD, df%rank, ierr)
+
+    ! Get the total number of processes
+    call MPI_Comm_size(MPI_COMM_WORLD, df%n_proc, ierr)
+
+    if (df%rank == 0) then 
+        call display_toml_file("./data/data.toml")
+    end if
     call config_data(df, "./data/data.toml")
 
-    allocate(Un(df%N_pts))
-    allocate(Unp1(df%N_pts))
-    allocate(Uexact(df%N_pts))
+    
+    call overlapping_charge(df%rank, df%Ny, df%n_proc, df%overlap, df%jbeg, df%jend)
 
-    !Initialize exacte solution and solution 
-    !with initial condition
-    do i=1,df%Nx
-        do j=1,df%Ny
-            l = (j-1)*df%Nx + i
-            x = i*df%hx
-            y = j*df%hy
+    ! print*,df%rank,'jbeg =',df%jbeg
+    ! print*,df%rank,'jend =',df%jend
 
-            Uexact(l) = ExactSolution(df, x, y, 0.0_pr)
-            Un(l) = InitialCondition(df, x, y)
+    allocate(Un(df%Nx*(df%jend-df%jbeg)))
+    allocate(Unp1(df%Nx*(df%jend-df%jbeg)))
+    allocate(Uexact(df%Nx*(df%jend-df%jbeg)))
 
-        enddo
-    enddo
+    !overlapping lines = [(n_proc-1)*overlap - n_proc]
 
-    !Save initial solution, exact solution and error
-    call SaveSol(df, Un, 0, '.vtk')
-    call SaveSolExact(df, 0, '.vtk')
+    print*, df%rank, "size:", size(Un)
+    if (df%rank == 0) print*, df%rank, "N_pts:", df%N_pts
+    
+    call InitSol(df, Un, Uexact)
+
+    ! Save initial solution, exact solution and error
+    call SaveSol(df, Un, 0, '.dat')
+    call SaveSolExact(df, 0, '.dat')
     open(newunit=io, file="./output/err_space_320.dat", status='replace', action="write")
     
     Unp1 = Un
@@ -50,14 +64,19 @@ program DiffusionEquation
         tn = tn + df%dt
 
         !Save solution, exact solution and error
-        call SaveSol(df, Un, t_iter, '.vtk')
-        call SaveSolExact(df, t_iter, '.vtk')
+        call SaveSol(df, Un, t_iter, '.dat')
+        call SaveSolExact(df, t_iter, '.dat')
         call SaveErr(df, Un, Uexact, t_iter, tn, io)
 
     enddo
 
 
+    ! Finalize MPI
+    deallocate(Un)
+    deallocate(Unp1)
+    deallocate(Uexact)
 
+    call MPI_Finalize(ierr)
 
 
 

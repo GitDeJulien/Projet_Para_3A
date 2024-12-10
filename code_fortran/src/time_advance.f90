@@ -15,10 +15,10 @@ contains
         real(pr), intent(in)               :: tn
 
         !Out
-        real(pr), dimension(df%N_pts), intent(out) :: Unp1
+        real(pr), dimension(1:df%Nx*(df%jend-df%jbeg)), intent(out) :: Unp1
 
         !Local
-        real(pr), dimension(df%N_pts) :: Snp1
+        real(pr), dimension(1:df%Nx*(df%jend-df%jbeg)) :: Snp1
 
         Snp1 = SrcTermFunc(df, Un, tn+df%dt)
         !Snp1 = 1.0_pr

@@ -2,9 +2,11 @@
 NAME = ST-VENANT_FINIT_VOLUME
 
 # Compiler
-FC = gfortran
+#FC = gfortran
+FC = mpif90
 AR = ar rcs
 RM = rm -f
+RUN = mpirun -np 3 #change the number of proc if needed
 
 # Directories
 SRC_DIR = ./src
@@ -73,10 +75,10 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 exe_debug:
-	$(DEBUG_TARGET)
+	$(RUN) $(DEBUG_TARGET)
 
 exe_release:
-	$[RELEASE_TARGET]
+	$(RUN) $[RELEASE_TARGET]
 
 # Clean up
 clean:

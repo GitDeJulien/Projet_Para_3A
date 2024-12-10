@@ -16,16 +16,18 @@ contains
         character(len=*)                   :: format
 
         !Local
-        character(len=125)                 :: ch
+        character(len=125)                 :: ch, ch_rank
         integer                            :: io
         integer                            :: i, j, l
         real(pr)                           :: x, y
         
         write(ch, '(I5)') n
+        write(ch_rank, '(I3)') df%rank
         if (format == '.dat') then
-            open(newunit=io, file="./output/dat/sol."//trim(adjustl(ch))//".dat", action="write")
-                do i=1,df%Nx
-                    do j=1,df%Ny
+            open(newunit=io, file="./output/dat/sol.me"//trim(adjustl(ch_rank))//"&
+            &.tps"//trim(adjustl(ch))//".dat", action="write")
+                do j=1,df%jend-df%jbeg
+                    do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         x = i*df%hx
                         y = j*df%hy
@@ -35,7 +37,8 @@ contains
             close(io)
 
         elseif (format == '.vtk') then
-            open(newunit=io, file="./output/vtk/sol."//trim(adjustl(ch))//".vtk", action="write")
+            open(newunit=io, file="./output/vtk/sol.me"//trim(adjustl(ch_rank))//"&
+            &.tps"//trim(adjustl(ch))//".vtk", action="write")
 
             write(io, *) "# vtk DataFile Version 3.0"
             write(io, *) "sol"
@@ -50,8 +53,8 @@ contains
 
 
 
-                do i=1,df%Nx
-                    do j=1,df%Ny
+                do j=1,df%jend-df%jbeg
+                    do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         x = i*df%hx
                         y = j*df%hy
@@ -72,17 +75,19 @@ contains
         character(len=*)              :: format
 
         !Local
-        character(len=125)            :: ch
+        character(len=125)            :: ch, ch_rank
         integer                       :: io
         integer                       :: i, j, l
         real(pr)                      :: x, y
         real(pr), dimension(df%N_pts) :: EXACT
         
         write(ch, '(I5)') n
+        write(ch_rank, '(I3)') df%rank
         if (format == '.dat') then
-            open(newunit=io, file="./output/dat/exact/sol."//trim(adjustl(ch))//".dat", action="write")
-                do i=1,df%Nx
-                    do j=1,df%Ny
+            open(newunit=io, file="./output/dat/exact/sol.me"//trim(adjustl(ch_rank))//"&
+            &.tps"//trim(adjustl(ch))//".dat", action="write")
+                do j=1,df%jend-df%jbeg
+                    do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         x = i*df%hx
                         y = j*df%hy
@@ -93,7 +98,8 @@ contains
             close(io)
 
         elseif (format == '.vtk') then
-            open(newunit=io, file="./output/vtk/exact/sol."//trim(adjustl(ch))//".vtk", action="write")
+            open(newunit=io, file="./output/vtk/exact/sol.me"//trim(adjustl(ch_rank))//"&
+            &.tps"//trim(adjustl(ch))//".vtk", action="write")
 
             write(io, *) "# vtk DataFile Version 3.0"
             write(io, *) "sol"
@@ -108,8 +114,8 @@ contains
 
 
 
-                do i=1,df%Nx
-                    do j=1,df%Ny
+                do j=1,df%jend-df%jbeg
+                    do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         x = i*df%hx
                         y = j*df%hy
