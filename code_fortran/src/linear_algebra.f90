@@ -9,24 +9,23 @@ contains
 
 
         !In
-        type(DataType), intent(in)         :: df
+        type(DataType), intent(inout)         :: df
         real(pr), dimension(:), intent(in) :: b
         integer , intent(in)               :: max_it
         real(pr), intent(in)               :: tol
 
         !Out
-        real(pr), dimension(df%N_pts), intent(out) :: X
+        real(pr), dimension(1:df%Nx*(df%jend-df%jbeg)), intent(out) :: X
 
         !Local
-        integer                            :: iter, N_pts
-        real(pr), dimension(df%N_pts)      :: r
-        real(pr), dimension(df%N_pts)      :: r0
-        real(pr), dimension(df%N_pts)      :: p, v, s, t, h
-        real(pr)                           :: rho, alpha, omega
-        real(pr)                           :: rho_prev, beta
-        real(pr)                           :: normB
+        integer                                         :: iter
+        real(pr), dimension(1:df%Nx*(df%jend-df%jbeg))  :: r
+        real(pr), dimension(1:df%Nx*(df%jend-df%jbeg))  :: r0
+        real(pr), dimension(1:df%Nx*(df%jend-df%jbeg))  :: p, v, s, t, h
+        real(pr)                                        :: rho, alpha, omega
+        real(pr)                                        :: rho_prev, beta
+        real(pr)                                        :: normB
 
-        N_pts = df%N_pts
 
         rho   = 1.0_pr
         alpha = 1.0_pr

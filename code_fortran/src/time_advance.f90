@@ -10,7 +10,7 @@ contains
     subroutine Advance(df, Un, tn, Unp1)
 
         !In
-        type(DataType), intent(in)         :: df
+        type(DataType), intent(inout)         :: df
         real(pr), dimension(:), intent(in) :: Un
         real(pr), intent(in)               :: tn
 
@@ -22,6 +22,7 @@ contains
 
         Snp1 = SrcTermFunc(df, Un, tn+df%dt)
         !Snp1 = 1.0_pr
+        
         call Lap_BiCGStab(df, Snp1, 10000, 1.e-8_pr, Unp1)
 
     end subroutine Advance
