@@ -24,13 +24,6 @@ contains
         real(pr) :: hx, hy, dt, D
         real(pr) :: alpha, beta, gamma
 
-        !MPI
-        integer  :: ierr,tag1, tag2
-        integer, dimension(MPI_STATUS_SIZE) :: status
-        
-        tag1 = 100
-        tag2 = 200
-
         dt = df%dt
         hx = df%hx
         hy = df%hy
@@ -45,28 +38,7 @@ contains
         beta = -dt*D*1._pr/hx**2
         gamma = -dt*D*1._pr/hy**2
 
-        ! call MPI_TYPE_CONTIGUOUS(Nx, MPI_FLOAT, l_top, ierr)
-        ! call MPI_TYPE_CONTIGUOUS(Nx, MPI_FLOAT, l_bot, ierr)
-        ! call MPI_TYPE_COMMIT(l_top, ierr)
-        ! call MPI_TYPE_COMMIT(l_bot, ierr)
-
-        
-        if (df%rank == 0) then
-            call MPI_RECV(U_star(Nx*(jend-jbeg-1)), 1, df%l_top, df%rank+1, tag1, MPI_COMM_WORLD, status, ierr)
-            U_star(1:Nx) = (1.0_pr + alpha)*Un(1:Nx)
-        elseif (df%rank == df%n_proc-1) then
-            call MPI_RECV(U_star(1), 1, df%l_bot, df%rank-1, tag2, MPI_COMM_WORLD, status, ierr)
-            U_star(Nx*(jend-jbeg-1):Nx*(jend-jbeg)) = (1.0_pr + alpha)*Un(Nx*(jend-jbeg-1):Nx*(jend-jbeg))
-        else
-            call MPI_RECV(U_star(1), 1, df%l_bot, df%rank-1, tag2, MPI_COMM_WORLD, status, ierr)
-            call MPI_RECV(U_star(Nx*(jend-jbeg-1)), 1, df%l_top, df%rank+1, tag1, MPI_COMM_WORLD, status, ierr)
-        endif
-
-        call MPI_TYPE_FREE(df%l_top, ierr)
-        call MPI_TYPE_FREE(df%l_bot, ierr)
-        
-
-        do j=2,jend-jbeg-1
+        do j=1,jend-jbeg
             do i=1,Nx
                 l = (j-1)*Nx + i
                 U_star(l) = (1.0_pr + alpha)*Un(l)
@@ -77,25 +49,6 @@ contains
                 if (j < jend-jbeg) U_star(l) = U_star(l) + gamma*Un(l+Nx)
             enddo
         enddo
-
-        call MPI_TYPE_CONTIGUOUS(Nx, MPI_FLOAT, df%l_top, ierr)
-        call MPI_TYPE_CONTIGUOUS(Nx, MPI_FLOAT, df%l_bot, ierr)
-        call MPI_TYPE_COMMIT(df%l_top, ierr)
-        call MPI_TYPE_COMMIT(df%l_bot, ierr)
-
-        if (df%rank == 0) then
-            call MPI_SEND(U_star(Nx*(jend-jbeg-df%overlap)), 1, df%l_top, df%rank+1, tag2, MPI_COMM_WORLD, ierr)
-
-        elseif (df%rank == df%n_proc-1) then
-            call MPI_SEND(U_star(Nx*df%overlap), 1, df%l_bot, df%rank-1, tag1, MPI_COMM_WORLD, ierr)
-
-        else
-            call MPI_SEND(U_star(Nx*df%overlap), 1, df%l_bot, df%rank-1, tag1, MPI_COMM_WORLD, ierr)
-            call MPI_SEND(U_star(Nx*(jend-jbeg-df%overlap)), 1, df%l_top, df%rank+1, tag2, MPI_COMM_WORLD, ierr)
-        endif
-
-        ! call MPI_TYPE_FREE(l_top, ierr)
-        ! call MPI_TYPE_FREE(l_bot, ierr)
 
 
     end function Lap_MatVectProduct
@@ -118,6 +71,13 @@ contains
         real(pr) :: hx, hy, dt, D, x, y
         real(pr) :: alpha, beta, gamma
 
+        !MPI
+        integer  :: ierr,tag1, tag2
+        integer, dimension(MPI_STATUS_SIZE) :: status
+        
+        tag1 = 100
+        tag2 = 200
+
         dt = df%dt
         hx = df%hx
         hy = df%hy
@@ -132,11 +92,20 @@ contains
         beta = -dt*D*1._pr/hx**2
         gamma = -dt*D*1._pr/hy**2
 
+        if (df%rank == 0) then
+            call MPI_RECV(Un(Nx*(jend-jbeg-1)), Nx, MPI_FLOAT, df%rank+1, tag1, MPI_COMM_WORLD, status, ierr)
+        elseif (df%rank == df%n_proc-1) then
+            call MPI_RECV(Un(1), Nx, MPI_FLOAT, df%rank-1, tag2, MPI_COMM_WORLD, status, ierr)
+        else
+            call MPI_RECV(Un(1), Nx, MPI_FLOAT, df%rank-1, tag2, MPI_COMM_WORLD, status, ierr)
+            call MPI_RECV(Un(Nx*(jend-jbeg-1)), Nx, MPI_FLOAT, df%rank+1, tag1, MPI_COMM_WORLD, status, ierr)
+        endif
+
         do j=1,jend-jbeg
             do i=1,Nx
                 l = (j-1)*Nx + i
                 x = i*hx
-                y = j*hy
+                y = (jbeg-1) + j*hy
 
                 S_star(l) = Un(l) + dt*SourceTerme(df, x, y, t)
 
@@ -150,10 +119,10 @@ contains
                 if (j == jend-jbeg .and. df%rank == df%n_proc-1) then
                     S_star(l) = S_star(l) - gamma*BC_Up(df, x, y+hy)
                 endif
-                    
-
+                
             end do
         enddo
+
 
     end function SrcTermFunc
 
@@ -181,19 +150,13 @@ contains
         jend = df%jend
 
 
-        call MPI_TYPE_CONTIGUOUS(Nx, MPI_INTEGER, df%l_top, ierr)
-        call MPI_TYPE_CONTIGUOUS(Nx, MPI_INTEGER, df%l_bot, ierr)
-        call MPI_TYPE_COMMIT(df%l_top, ierr)
-        call MPI_TYPE_COMMIT(df%l_bot, ierr)
-
-
         ! Initialize exacte solution and solution 
         ! with initial condition
         do j=1,jend-jbeg
             do i=1,Nx
                 l = (j-1)*Nx + i
                 x = i*df%hx
-                y = j*df%hy
+                y = (jbeg-1) + j*df%hy
 
                 Uexact(l) = ExactSolution(df, x, y, 0.0_pr)
                 U0(l) = InitialCondition(df, x, y)
@@ -203,16 +166,13 @@ contains
 
 
         if (df%rank == 0) then
-            call MPI_SEND(U0(Nx*(jend-jbeg-df%overlap)), 1, df%l_top, df%rank+1, tag2, MPI_COMM_WORLD, ierr)
+            call MPI_SEND(U0(Nx*(jend-jbeg-df%overlap)), Nx, MPI_FLOAT, df%rank+1, tag2, MPI_COMM_WORLD, ierr)
         elseif (df%rank == df%n_proc-1) then
-            call MPI_SEND(U0(Nx*df%overlap), 1, df%l_bot, df%rank-1, tag1, MPI_COMM_WORLD, ierr)
+            call MPI_SEND(U0(Nx*df%overlap), Nx, MPI_FLOAT, df%rank-1, tag1, MPI_COMM_WORLD, ierr)
         else
-            call MPI_SEND(U0(Nx*df%overlap), 1, df%l_bot, df%rank-1, tag1, MPI_COMM_WORLD, ierr)
-            call MPI_SEND(U0(Nx*(jend-jbeg-df%overlap)), 1, df%l_top, df%rank+1, tag2, MPI_COMM_WORLD, ierr)
+            call MPI_SEND(U0(Nx*df%overlap), Nx, MPI_FLOAT, df%rank-1, tag1, MPI_COMM_WORLD, ierr)
+            call MPI_SEND(U0(Nx*(jend-jbeg-df%overlap)), Nx, MPI_FLOAT, df%rank+1, tag2, MPI_COMM_WORLD, ierr)
         endif
-
-        ! call MPI_TYPE_FREE(l_top, ierr)
-        ! call MPI_TYPE_FREE(l_bot, ierr)
 
     end subroutine InitSol
 

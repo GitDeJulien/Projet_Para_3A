@@ -8,7 +8,7 @@ program DiffusionEquation
     implicit none
 
     type(DataType)                      :: df
-    integer                             :: t_iter, io
+    integer                             :: t_iter, io, tag1, tag2
     real(pr)                            :: tn
     real(pr), dimension(:), allocatable :: Un, Unp1, Uexact
 
@@ -48,10 +48,12 @@ program DiffusionEquation
 
     ! Save initial solution, exact solution and error
     call SaveSol(df, Un, 0, '.dat')
-    call SaveSolExact(df, 0, '.dat')
+    call SaveSolExact(df, Uexact, 0, '.dat')
     open(newunit=io, file="./output/err_space_320.dat", status='replace', action="write")
     
     Unp1 = Un
+    tag1 = 100
+    tag2 = 200
 
     tn = df%t0 + df%dt
     do t_iter=1,df%niter
@@ -63,9 +65,23 @@ program DiffusionEquation
         Un = Unp1
         tn = tn + df%dt
 
+        !Solution comunication
+        if (t_iter /= df%niter) then
+            if (df%rank == 0) then
+                call MPI_SEND(Un(df%Nx*(df%jend-df%jbeg-df%overlap)), df%Nx, MPI_FLOAT, df%rank+1, tag2, MPI_COMM_WORLD, ierr)
+
+            elseif (df%rank == df%n_proc-1) then
+                call MPI_SEND(Un(df%Nx*df%overlap), df%Nx, MPI_FLOAT, df%rank-1, tag1, MPI_COMM_WORLD, ierr)
+
+            else
+                call MPI_SEND(Un(df%Nx*df%overlap), df%Nx, MPI_FLOAT, df%rank-1, tag1, MPI_COMM_WORLD, ierr)
+                call MPI_SEND(Un(df%Nx*(df%jend-df%jbeg-df%overlap)), df%Nx, MPI_FLOAT, df%rank+1, tag2, MPI_COMM_WORLD, ierr)
+            endif
+        endif
+
         !Save solution, exact solution and error
         call SaveSol(df, Un, t_iter, '.dat')
-        call SaveSolExact(df, t_iter, '.dat')
+        call SaveSolExact(df, Uexact, t_iter, '.dat')
         call SaveErr(df, Un, Uexact, t_iter, tn, io)
 
     enddo

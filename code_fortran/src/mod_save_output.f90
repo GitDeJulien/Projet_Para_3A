@@ -30,7 +30,7 @@ contains
                     do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         x = i*df%hx
-                        y = j*df%hy
+                        y = (df%jbeg-1) + j*df%hy
                         write(io, *) x, y, SOL(l)
                     enddo
                 enddo
@@ -57,7 +57,7 @@ contains
                     do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         x = i*df%hx
-                        y = j*df%hy
+                        y = (df%jbeg-1) + j*df%hy
                         write(io, *) SOL(l)
                     enddo
                 enddo
@@ -67,10 +67,11 @@ contains
 
     end subroutine SaveSol
 
-    subroutine SaveSolExact(df, n, format)
+    subroutine SaveSolExact(df, SOL, n, format)
 
         !In
         type(DataType), intent(in)    :: df
+        real(pr), dimension(:), intent(in) :: SOL
         integer, intent(in)           :: n
         character(len=*)              :: format
 
@@ -79,7 +80,6 @@ contains
         integer                       :: io
         integer                       :: i, j, l
         real(pr)                      :: x, y
-        real(pr), dimension(df%N_pts) :: EXACT
         
         write(ch, '(I5)') n
         write(ch_rank, '(I3)') df%rank
@@ -90,9 +90,8 @@ contains
                     do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         x = i*df%hx
-                        y = j*df%hy
-                        EXACT(l) = ExactSolution(df, x, y, n*df%dt)
-                        write(io, *) x, y, EXACT(l)
+                        y = (df%jbeg-1) + j*df%hy
+                        write(io, *) x, y, SOL(l)
                     enddo
                 enddo
             close(io)
@@ -118,9 +117,8 @@ contains
                     do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         x = i*df%hx
-                        y = j*df%hy
-                        EXACT(l) = ExactSolution(df, x, y, n*df%dt)
-                        write(io, *) EXACT(l)
+                        y = (df%jbeg-1) + j*df%hy
+                        write(io, *) x, y, SOL(l)
                     enddo
                 enddo
             close(io)
@@ -144,11 +142,11 @@ contains
 
         err = 0._pr
 
-        do i=1,df%Nx
-            do j=1,df%Ny
+        do j=1,df%jend-df%jbeg
+            do i=1,df%Nx
                 l = (j-1)*df%Nx + i
                 x = i*df%hx
-                y = j*df%hy
+                y = (df%jbeg-1) + j*df%hy
                 err = err + (EXACT(l) - SOL(l))**2
             enddo
         enddo
