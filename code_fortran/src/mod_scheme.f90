@@ -105,7 +105,7 @@ contains
             do i=1,Nx
                 l = (j-1)*Nx + i
                 x = i*hx
-                y = (jbeg-1) + j*hy
+                y = (jbeg + j)*hy
 
                 S_star(l) = Un(l) + dt*SourceTerme(df, x, y, t)
 
@@ -156,7 +156,7 @@ contains
             do i=1,Nx
                 l = (j-1)*Nx + i
                 x = i*df%hx
-                y = (jbeg-1) + j*df%hy
+                y = (jbeg + j)*df%hy
 
                 Uexact(l) = ExactSolution(df, x, y, 0.0_pr)
                 U0(l) = InitialCondition(df, x, y)

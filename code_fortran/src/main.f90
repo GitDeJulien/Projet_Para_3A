@@ -49,7 +49,8 @@ program DiffusionEquation
     ! Save initial solution, exact solution and error
     call SaveSol(df, Un, 0, '.dat')
     call SaveSolExact(df, Uexact, 0, '.dat')
-    open(newunit=io, file="./output/err_space_320.dat", status='replace', action="write")
+
+    open(newunit=io, file="./output/err.dat", status='replace', action="write")
     
     Unp1 = Un
     tag1 = 100

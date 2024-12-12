@@ -9,7 +9,7 @@ contains
 
 
         !In
-        type(DataType), intent(inout)         :: df
+        type(DataType), intent(inout)      :: df
         real(pr), dimension(:), intent(in) :: b
         integer , intent(in)               :: max_it
         real(pr), intent(in)               :: tol

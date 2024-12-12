@@ -71,6 +71,7 @@ module toml_parser
         integer :: ios
         character(len=256) :: line
         logical :: found
+        integer :: pos
 
         open(unit=10, file=filename, status='old', action='read', iostat=ios)
         if (ios /= 0) then
@@ -80,11 +81,13 @@ module toml_parser
 
         found = .false.
         do
-        read(10, '(A)', iostat=ios) line
+            read(10, '(A)', iostat=ios) line
             if (ios /= 0) exit
             line = adjustl(trim(line))
             if (line == "" .or. line(1:1) == "#" .or. line(1:1) == '[') cycle
-            if (index(line, trim(key)) > 0) then
+
+            pos = index(line, trim(key))
+            if (pos > 0 .and. (pos == 1 .or. line(pos-1:pos-1) == ' ')) then
                 call extract_value(line, value)
                 found = .true.
                 exit
@@ -140,4 +143,3 @@ module toml_parser
     end subroutine display_toml_file
 
 end module toml_parser
-
