@@ -33,13 +33,13 @@ class TimeScheme {
 
         TimeScheme(Data* data, LinearAlgebra* lin, Function* fct, SpaceScheme* ssch);
 
-        std::vector<double> EulerExplicite(const Matrix& A, const std::vector<double> Un , const std::vector<double> bn);
+        std::vector<double> EulerExplicite(const std::vector<double> Un , const std::vector<double> bn);
 
-        std::vector<double> EulerImplicite(const Matrix& A, const std::vector<double> Un , const std::vector<double> bnp1);
+        std::vector<double> EulerImplicite(const std::vector<double> Un , const std::vector<double> bnp1);
 
-        std::vector<double> CranckNicholson(const Matrix& A, const std::vector<double> Un , const std::vector<double> bn, const std::vector<double> bnp1);
+        std::vector<double> CranckNicholson(const std::vector<double> Un , const std::vector<double> bn, const std::vector<double> bnp1);
 
-        std::vector<double> Advance(const Matrix& A, const std::vector<double> Un, const double tn);
+        std::vector<double> Advance(const std::vector<double> Un, const double tn);
 
         void SaveSol(const std::vector<double>& sol, const std::string& path, int n);
 

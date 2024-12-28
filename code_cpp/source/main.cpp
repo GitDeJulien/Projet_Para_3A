@@ -26,13 +26,16 @@ int main(int argc, char** argv) {
     Data* data = new Data(filename);
 
     //Pointer to Function class
-    Function* function = new Function();
-
-    //Pointer to Linear Algebra class
-    LinearAlgebra* lin = new LinearAlgebra();
+    Function* function = new Function(data);
 
     //Pointer to Space Scheme class
-    SpaceScheme* ssch = new SpaceScheme();
+    SpaceScheme* ssch = new SpaceScheme(data, function);
+
+    //Pointer to Linear Algebra class
+    LinearAlgebra* lin = new LinearAlgebra(data, ssch);
+
+    //Pointer to Linear Algebra class
+    LinearAlgebra* lin = new LinearAlgebra(data, ssch);
 
     //Pointer to Time Scheme class
     TimeScheme* tsch = new TimeScheme(data, lin, function, ssch);
@@ -40,77 +43,70 @@ int main(int argc, char** argv) {
     //Display all the parameters and conditions used for computation
     data->display_parameters();
 
-    int Nx(0);
-    int Ny(0);
-    int N(0);
 
-    Nx = data->Get_Nx();
-    Ny = data->Get_Ny();
-    N = Nx*Ny;
+    int Nx = data->Get_Nx();
+    int Ny = data->Get_Ny();
+    int N_pts = data->Get_N_pts();
+    double hx = data->Get_hx();
+    double hy = data->Get_hy();
 
-    Matrix A(N,N);
-    std::vector<double> Un;
-    std::vector<double> Unp1;
-    std::vector<double> Sn;
+    std::vector<double> Un(N_pts);
+    std::vector<double> Unp1(N_pts);
+    std::vector<double> Sn(N_pts);
 
-    //Laplacian matrix discretisation
-    A = ssch->BuildMatrix(data);
+    std::cout << "N_pts: " << N_pts << std::endl;
 
     //Initial solution
-    Un = ssch->Initialize(data, function);
-
-    Unp1 = Un;
+    //Un = ssch->Initialize();
+    //Unp1 = ssch->Initialize(data, function);
 
     tsch->SaveSol(Un, data->Get_outputPath(), 0);
-
 
     double tn = data->Get_t0();
     double nb_iteration = data->Get_niter();
     double dt = data->Get_dt();
 
-    std::vector<double> U_exact(N,0.0);
+    std::vector<double> U_exact(N_pts);
     double error(0.0);
-    for(int i=1; i<=Nx; ++i){
-        for(int j=1; j<=Ny; ++j){
-            int l = (j-1)*Nx + (i-1);
-            double x = i*data->Get_hx();
-            double y = j*data->Get_hy();
-            U_exact[l] = function->ExactSolution(data, x, y);
-        }
+
+    for(int l=0; l<N_pts; ++l){
+
+        int j = l/Nx+1;
+        int i = l%Nx+1;
+        double x = i*hx;
+        double y = j*hy;
+
+        Un[l] = function->ExactSolution(x,y);
+        U_exact[l] = function->ExactSolution(x, y);
     }
 
+    tsch->SaveSol(U_exact, "output/Exact1", 0);
+
+    std::cout << "Starting time loop" << std::endl;
+    tn += dt;
     for(int iter = 1; iter<nb_iteration; ++iter) {
 
+        Sn = ssch->SourceTerme(tn+dt, Un);
+        Unp1 = lin->Lap_BiCGStab(Sn, 10000, 1e-6);
+
         //Advance of a time step with the chosen time scheme
-        Unp1 = tsch->Advance(A, Un, tn);
+        //Unp1 = tsch->Advance(Un, tn);
 
         //Download result in vtk files
         tsch->SaveSol(Unp1, data->Get_outputPath(), iter);
 
+
         //Error computation
-        for (int i=0; i<N; ++i){
-            error += fabs(Unp1[i] - U_exact[i]);
+        for (int l=0; l<N_pts; ++l){
+            error += pow(fabs(Unp1[l] - U_exact[l]),2);
         }
 
         //Update
         Un = Unp1;
         tn += dt;
-        std::cout << "tn: " << tn << ", " << "error: " << 1./N*sqrt(error) << std::endl;
+        std::cout << "tn: " << tn << ", " << "error: " << 1./N_pts*sqrt(error) << std::endl;
         error = 0.0;
     }
-
-
-
-    tsch->SaveSol(U_exact, "output/Exact2", 0);
-
-    /*TODO :
-
-        - Commencer à réfléchir à une stratégie de parallélisation
-    */
-
-    //Error
-
-
 
     //Pointer deletion
     delete data, delete function, delete lin, delete ssch, delete tsch;
@@ -121,6 +117,20 @@ int main(int argc, char** argv) {
 //############################//
 //########## TEST ############//
 //############################//
+
+/* TEST PROD MAT-VECT
+    Matrix matrix = ssch->BuildMatrix(data);
+    std::cout << matrix.rows << matrix.cols << std::endl;
+    std::vector<double> U_test(N_pts, 1.0);
+    std::vector<double> U_test2(N_pts, 1.0);
+    U_test = ssch->Lap_MatVectProduct(data, U_test);
+    U_test2 = matrix.MatrixVectorProduct(U_test2);
+
+    std::cout << "U_test - U_test2" << std::endl;
+    for (int l=0; l<N_pts; ++l) {
+        std::cout << U_test[l] - U_test2[l] << std::endl;
+    }
+*/
 
 /*
 TEST MATRIX CLASS

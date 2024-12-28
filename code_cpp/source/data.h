@@ -11,14 +11,15 @@ class Data {
         //Space
         double _Lx;
         double _Ly;
-        double _Nx;
-        double _Ny;
+        int _Nx;
+        int _Ny;
         double _hx;
         double _hy;
+        int _N_pts;
 
         //Time
         double _t0;
-        double _niter;
+        int _niter;
         double _dt;
         double _cfl;
         double _tfinal;
@@ -34,6 +35,9 @@ class Data {
         int _key_LeftBoundCond;
         int _key_DownBoundCond;
         int _key_UpBoundCond;
+
+        //Boundary condition for Schwarz method
+        int _key_Schwarz_Bounds;
 
         //Source terme key
         int _key_SourceTerme;
@@ -59,12 +63,13 @@ class Data {
         const double & Get_diffusion_coeff() const {return _diffusionCoeff;};
         const double & Get_Lx() const {return _Lx;};
         const double & Get_Ly() const {return _Ly;};
-        const double & Get_Nx() const {return _Nx;};
-        const double & Get_Ny() const {return _Ny;};
+        const int & Get_Nx() const {return _Nx;};
+        const int & Get_Ny() const {return _Ny;};
+        const int & Get_N_pts() const {return _N_pts;};
         const double & Get_hx() const {return _hx;};
         const double & Get_hy() const {return _hy;};
         const double & Get_t0() const {return _t0;};
-        const double & Get_niter() const {return _niter;};
+        const int & Get_niter() const {return _niter;};
         const double & Get_dt() const {return _dt;};
         const double & Get_cfl() const {return _cfl;};
         const double & Get_tfinal() const {return _tfinal;};
@@ -74,6 +79,7 @@ class Data {
         const int & Get_key_LeftBoundCond() const {return _key_LeftBoundCond;};
         const int & Get_key_UpBoundCond() const {return _key_UpBoundCond;};
         const int & Get_key_DownBoundCond() const {return _key_DownBoundCond;};
+        const int & Get_key_Schwarz_Bounds() const {return _key_Schwarz_Bounds;};
         const int & Get_key_SourceTerme() const {return _key_SourceTerme;};
         const int & Get_key_InitialCondition() const {return _key_InitialCondition;};
         const std::string & Get_outputPath() const {return _outputPath;};
