@@ -260,7 +260,7 @@ contains
 
 
         if (df%rank /= df%n_proc-1) then
-            call MPI_SEND(Un(1+Nx*(jfin-df%overlap/2))&
+            call MPI_SEND(Un(1+Nx*(jfin-df%overlap/2-1))&
             , Nx, MPI_DOUBLE, df%rank+1, tag2*(df%rank+1), MPI_COMM_WORLD, ierr)
             !print*, "rank_send:", df%rank, "Usend_up:", Un(1+Nx*(jfin-df%overlap-2):Nx*(jfin-df%overlap-1))
         endif
