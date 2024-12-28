@@ -149,8 +149,8 @@ contains
         call MPI_Reduce(local_err, err, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
         if (df%rank == 0) then
-            print*, "error = ", sqrt(1._pr/df%N_pts*err)
-            write(io, *) n, tn, sqrt(1._pr/df%N_pts*err)
+            print*, "error = ", 1._pr/df%N_pts*sqrt(err)
+            write(io, *) n, tn, 1._pr/df%N_pts*sqrt(err)
         endif
 
         if (n==df%niter) then

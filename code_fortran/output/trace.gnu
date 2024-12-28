@@ -23,13 +23,13 @@ set xrange [0.0:1.0]
 set yrange [0.0:1.0]
 
 # si affichage 3D, fixe le point de vue. A changer selon les cas.
-set view 90,90
+set view 100,100
 
 #pour faire un gif
 set term gif animate 
 set output "sol.gif"
 
-do for [i = 0:200] {
+do for [i = 0:100] {
     t=(i-1)*1.0
     set title "t = ".sprintf("%f", t)." s"." (i = ".sprintf("%d", i).")"
     show title

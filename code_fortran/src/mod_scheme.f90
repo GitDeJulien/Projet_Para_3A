@@ -142,7 +142,7 @@ contains
         S_star = 0.
 
         if (df%rank == 0) then
-            S_star(1+(jfin-1)*Nx:jfin*Nx) = Urecv_up(1:Nx)
+            S_star(1+(jfin-1)*Nx:jfin*Nx) = gamma*Urecv_up(1:Nx)
             do j=1,jfin-1
                 y = (jbeg-1+j)*df%hy
                 do i = 1, Nx
@@ -160,7 +160,7 @@ contains
                 enddo
             enddo
         elseif (df%rank == df%n_proc-1) then
-            S_star(1:Nx) = Urecv_down(1:Nx)
+            S_star(1:Nx) = gamma*Urecv_down(1:Nx)
             do j=2,jfin
                 y = (jbeg-1+j)*df%hy
                 do i = 1, Nx
@@ -178,8 +178,8 @@ contains
                 enddo
             enddo
         else
-            S_star(1:Nx) = Urecv_down(1:Nx)
-            S_star(1+(jfin-1)*Nx:jfin*Nx) = Urecv_up(1:Nx)
+            S_star(1:Nx) = gamma*Urecv_down(1:Nx)
+            S_star(1+(jfin-1)*Nx:jfin*Nx) = gamma*Urecv_up(1:Nx)
             do j=2,jfin-1
                 y = (jbeg-1+j)*df%hy
                 do i=1,Nx
@@ -253,21 +253,14 @@ contains
         Nx = df%Nx
         jfin = df%jfin
 
-
-        ! print*, "rank recv:", df%rank, "jbeg:", jbeg, "jend:", jend, "beg:", &
-        ! Nx*(jend-jbeg+1-df%overlap), "end:", Nx*(jend-jbeg+1-df%overlap+1)
-        !print*, "rank_recv:", df%rank, "shape down:", shape(Usend_down), "shape up:", shape(Usend_up)
-
-
+        ! -- Send messages (lines)
         if (df%rank /= df%n_proc-1) then
             call MPI_SEND(Un(1+Nx*(jfin-df%overlap/2-1))&
             , Nx, MPI_DOUBLE, df%rank+1, tag2*(df%rank+1), MPI_COMM_WORLD, ierr)
-            !print*, "rank_send:", df%rank, "Usend_up:", Un(1+Nx*(jfin-df%overlap-2):Nx*(jfin-df%overlap-1))
         endif
         if (df%rank /= 0) then
             call MPI_SEND(Un(1+Nx*(df%overlap/2))&
             , Nx, MPI_DOUBLE, df%rank-1, tag1*(df%rank-1), MPI_COMM_WORLD, ierr)
-            !print*, "rank_send:", df%rank, "Usend_down:", Un(1+Nx*(df%overlap-1):Nx*(df%overlap))
         endif
 
     end subroutine SendMessage
