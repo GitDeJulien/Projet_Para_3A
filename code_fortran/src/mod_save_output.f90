@@ -27,11 +27,11 @@ contains
         if (format == '.dat') then
             open(newunit=io, file="./output/dat/sol.me"//trim(adjustl(ch_rank))//"&
             &.tps"//trim(adjustl(ch))//".dat", action="write")
-                do j=1,df%jend-df%jbeg
+                do j=1,df%jfin
+                    y = (df%jbeg-1+j)*df%hy
                     do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         x = i*df%hx
-                        y = (df%jbeg + j)*df%hy
                         write(io, *) x, y, SOL(l)
                     enddo
                 enddo
@@ -45,15 +45,15 @@ contains
             write(io, *) "sol"
             write(io, *) "ASCII"
             write(io, *) "DATASET STRUCTURED_POINTS"
-            write(io, *) "DIMENSIONS", df%Nx, df%jend-df%jbeg, 1
+            write(io, *) "DIMENSIONS", df%Nx, df%jfin, 1
             write(io, *) "ORIGIN", 0, 0, 0
             write(io, *) "SPACING", df%hx, df%hy, 1
-            write(io, *) "POINT_DATA", df%Nx*(df%jend-df%jbeg)
+            write(io, *) "POINT_DATA", df%Nx*(df%jfin)
             write(io, *) "LOOKUP_TABLE default"
 
 
 
-                do j=1,df%jend-df%jbeg
+                do j=1,df%jfin
                     do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         write(io, *) SOL(l)
@@ -84,11 +84,12 @@ contains
         if (format == '.dat') then
             open(newunit=io, file="./output/dat/exact/sol.me"//trim(adjustl(ch_rank))//"&
             &.tps"//trim(adjustl(ch))//".dat", action="write")
-                do j=1,df%jend-df%jbeg
+                do j=1,df%jfin
+                    y = (df%jbeg-1+j)*df%hy
                     do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         x = i*df%hx
-                        y = (df%jbeg + j)*df%hy
+                        
                         write(io, *) x, y, SOL(l)
                     enddo
                 enddo
@@ -102,16 +103,16 @@ contains
             write(io, *) "sol"
             write(io, *) "ASCII"
             write(io, *) "DATASET STRUCTURED_POINTS"
-            write(io, *) "DIMENSIONS", df%Nx, df%jend-df%jbeg, 1
+            write(io, *) "DIMENSIONS", df%Nx, df%jfin, 1
             write(io, *) "ORIGIN", 0, 0, 0
             write(io, *) "SPACING", df%hx, df%hy, 1
-            write(io, *) "POINT_DATA", df%Nx*(df%jend-df%jbeg)
+            write(io, *) "POINT_DATA", df%Nx*(df%jfin)
             write(io, *) "SCALARS sol float"
             write(io, *) "LOOKUP_TABLE default"
 
 
 
-                do j=1,df%jend-df%jbeg
+                do j=1,df%jfin
                     do i=1,df%Nx
                         l = (j-1)*df%Nx + i
                         write(io, *) SOL(l)
@@ -138,7 +139,7 @@ contains
 
         local_err = 0._pr
 
-        do j=1,df%jend-df%jbeg
+        do j=1,df%jfin
             do i=1,df%Nx
                 l = (j-1)*df%Nx + i
                 local_err = local_err + (EXACT(l) - SOL(l))**2
@@ -148,8 +149,8 @@ contains
         call MPI_Reduce(local_err, err, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
         if (df%rank == 0) then
-            print*, "error = ", 1._pr/df%N_pts*sqrt(err)
-            write(io, *) n, tn, 1._pr/df%N_pts*sqrt(err)
+            print*, "error = ", sqrt(1._pr/df%N_pts*err)
+            write(io, *) n, tn, sqrt(1._pr/df%N_pts*err)
         endif
 
         if (n==df%niter) then

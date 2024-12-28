@@ -8,12 +8,12 @@ program DiffusionEquation
     implicit none
 
     type(DataType)                      :: df
-    integer                             :: t_iter, io, tag1, tag2
+    integer                             :: t_iter, io
     real(pr)                            :: tn
     real(pr), dimension(:), allocatable :: Un, Unp1, Uexact
 
     ! MPI variables
-    integer :: ierr!, rank, size_p, jbeg, jend
+    integer :: ierr
 
     ! Initialize MPI
     call MPI_Init(ierr)
@@ -32,17 +32,19 @@ program DiffusionEquation
     
     call overlapping_charge(df%rank, df%Ny, df%n_proc, df%overlap, df%jbeg, df%jend)
 
-    ! print*,df%rank,'jbeg =',df%jbeg
-    ! print*,df%rank,'jend =',df%jend
+    print*,df%rank,'jbeg =',df%jbeg
+    print*,df%rank,'jend =',df%jend
 
-    allocate(Un(df%Nx*(df%jend-df%jbeg)))
-    allocate(Unp1(df%Nx*(df%jend-df%jbeg)))
-    allocate(Uexact(df%Nx*(df%jend-df%jbeg)))
+    df%jfin = df%jend - df%jbeg + 1
+
+    allocate(Un(df%Nx*df%jfin))
+    allocate(Unp1(df%Nx*df%jfin))
+    allocate(Uexact(df%Nx*df%jfin))
 
     !overlapping lines = [(n_proc-1)*overlap - n_proc]
 
-    print*, df%rank, "size:", size(Un)
-    if (df%rank == 0) print*, df%rank, "N_pts:", df%N_pts
+    ! print*, df%rank, "size:", size(Un)
+    ! if (df%rank == 0) print*, df%rank, "N_pts:", df%N_pts
     
     call InitSol(df, Un, Uexact)
 
@@ -53,11 +55,12 @@ program DiffusionEquation
     open(newunit=io, file="./output/err.dat", status='replace', action="write")
     
     Unp1 = Un
-    tag1 = 100
-    tag2 = 200
 
     tn = df%t0 + df%dt
     do t_iter=1,df%niter
+
+        call SendMessage(df, Un)
+        call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
         !One more step in time
         call Advance(df, Un, tn, Unp1)
@@ -65,20 +68,6 @@ program DiffusionEquation
         !Update solution and time step
         Un = Unp1
         tn = tn + df%dt
-
-        !Solution comunication
-        if (t_iter /= df%niter) then
-            if (df%rank == 0) then
-                call MPI_SEND(Un(df%Nx*(df%jend-df%jbeg-df%overlap)), df%Nx, MPI_FLOAT, df%rank+1, tag2, MPI_COMM_WORLD, ierr)
-
-            elseif (df%rank == df%n_proc-1) then
-                call MPI_SEND(Un(df%Nx*df%overlap), df%Nx, MPI_FLOAT, df%rank-1, tag1, MPI_COMM_WORLD, ierr)
-
-            else
-                call MPI_SEND(Un(df%Nx*df%overlap), df%Nx, MPI_FLOAT, df%rank-1, tag1, MPI_COMM_WORLD, ierr)
-                call MPI_SEND(Un(df%Nx*(df%jend-df%jbeg-df%overlap)), df%Nx, MPI_FLOAT, df%rank+1, tag2, MPI_COMM_WORLD, ierr)
-            endif
-        endif
 
         !Save solution, exact solution and error
         call SaveSol(df, Un, t_iter, '.dat')

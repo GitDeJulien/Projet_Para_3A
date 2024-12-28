@@ -8,7 +8,7 @@ Ny = 40
 
 [TIME] (implicite scheme)
 t0 = 0.0
-niter = 5
+niter = 100
 dt = 1.0
 cfl = 0.8
 
@@ -17,7 +17,7 @@ D = 1.0
 
 [SCHWARZ METHODE] (1:Dirichlet, 2:Robin)
 BC_Schwarz = 1
-overlap = 3
+overlap = 2
 
 [CAS TEST]
 cas = 1

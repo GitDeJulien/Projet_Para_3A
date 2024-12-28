@@ -39,9 +39,7 @@ module data_mod
     integer  :: n_proc
     integer  :: jbeg
     integer  :: jend
-    integer  :: l_top
-    integer  :: l_bot
-
+    integer  :: jfin
 
 
     end type DataType

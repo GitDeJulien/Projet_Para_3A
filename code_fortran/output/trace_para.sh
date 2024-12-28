@@ -9,4 +9,4 @@ do
     rm -f dat/exact/sol.me*.tps$n.dat
 done
 
-gnuplot trace.gnu
+#gnuplot trace.gnu
