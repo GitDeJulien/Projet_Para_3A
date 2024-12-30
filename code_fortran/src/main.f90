@@ -36,15 +36,17 @@ program DiffusionEquation
     print*,df%rank,'jend =',df%jend
 
     df%jfin = df%jend - df%jbeg + 1
+    print*,df%rank, "jfin =", df%jfin
 
     allocate(Un(df%Nx*df%jfin))
     allocate(Unp1(df%Nx*df%jfin))
     allocate(Uexact(df%Nx*df%jfin))
 
-    !overlapping lines = [(n_proc-1)*overlap - n_proc]
+    ! !overlapping lines = [(n_proc-1)*overlap - n_proc]
 
-    ! print*, df%rank, "size:", size(Un)
-    ! if (df%rank == 0) print*, df%rank, "N_pts:", df%N_pts
+    print*, df%rank, "size:", size(Un)
+    if (df%rank == 0) print*, df%rank, "N_pts:", df%N_pts
+    !if (df%rank == 2) print*, df%rank, "Un(0):", Un(0), "Un(fin):", Un((df%Nx+2)*(df%jfin+1)+df%Nx+1)
     
     call InitSol(df, Un, Uexact)
 
@@ -53,6 +55,7 @@ program DiffusionEquation
     call SaveSolExact(df, Uexact, 0, '.dat')
 
     open(newunit=io, file="./output/err.dat", status='replace', action="write")
+    call SaveErr(df, Un, Uexact, 0, df%t0, io)
     
     Unp1 = Un
 

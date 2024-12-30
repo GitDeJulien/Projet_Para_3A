@@ -28,10 +28,10 @@ contains
             open(newunit=io, file="./output/dat/sol.me"//trim(adjustl(ch_rank))//"&
             &.tps"//trim(adjustl(ch))//".dat", action="write")
                 do j=1,df%jfin
-                    y = (df%jbeg-1+j)*df%hy
+                    y = ((df%jbeg-1)-1+j)*df%hy
                     do i=1,df%Nx
                         l = (j-1)*df%Nx + i
-                        x = i*df%hx
+                        x = (i-1)*df%hx
                         write(io, *) x, y, SOL(l)
                     enddo
                 enddo
@@ -85,10 +85,10 @@ contains
             open(newunit=io, file="./output/dat/exact/sol.me"//trim(adjustl(ch_rank))//"&
             &.tps"//trim(adjustl(ch))//".dat", action="write")
                 do j=1,df%jfin
-                    y = (df%jbeg-1+j)*df%hy
+                    y = ((df%jbeg-1)-1+j)*df%hy
                     do i=1,df%Nx
                         l = (j-1)*df%Nx + i
-                        x = i*df%hx
+                        x = (i-1)*df%hx
                         
                         write(io, *) x, y, SOL(l)
                     enddo

@@ -43,44 +43,17 @@ contains
 
         U_star = Un
 
-        if (df%rank == 0) then
-            do j=1,jfin-1
-                do i=1,Nx
-                    l = (j-1)*Nx + i
-                    U_star(l) = (1.0_pr + alpha)*Un(l)
-    
-                    if (i > 1)  U_star(l) = U_star(l) + beta*Un(l-1)
-                    if (i < Nx) U_star(l) = U_star(l) + beta*Un(l+1)
-                    if (j > 1) U_star(l) = U_star(l) + gamma*Un(l-Nx)
-                    if (j < jfin-1) U_star(l) = U_star(l) + gamma*Un(l+Nx)
-                enddo
-            enddo
-        elseif (df%rank == df%n_proc-1) then
-            do j=2,jfin
-                do i=1,Nx
-                    l = (j-1)*Nx + i
-                    U_star(l) = (1.0_pr + alpha)*Un(l)
-    
-                    if (i > 1)  U_star(l) = U_star(l) + beta*Un(l-1)
-                    if (i < Nx) U_star(l) = U_star(l) + beta*Un(l+1)
-                    if (j > 2) U_star(l) = U_star(l) + gamma*Un(l-Nx)
-                    if (j < jfin) U_star(l) = U_star(l) + gamma*Un(l+Nx)
-                enddo
-            enddo
-        else
-            do j=2,jfin-1
-                do i=1,Nx
-                    l = (j-1)*Nx + i
-                    U_star(l) = (1.0_pr + alpha)*Un(l)
-    
-                    if (i > 1)  U_star(l) = U_star(l) + beta*Un(l-1)
-                    if (i < Nx) U_star(l) = U_star(l) + beta*Un(l+1)
-                    if (j > 2) U_star(l) = U_star(l) + gamma*Un(l-Nx)
-                    if (j < jfin-1) U_star(l) = U_star(l) + gamma*Un(l+Nx)
-                enddo
-            enddo
-        endif
+        do j=2,jfin-1
+            do i=2,Nx-1
+                l = (j-1)*Nx + i
+                U_star(l) = (1.0_pr + alpha)*Un(l)
 
+                if (i > 2)  U_star(l) = U_star(l) + beta*Un(l-1)
+                if (i < Nx-1) U_star(l) = U_star(l) + beta*Un(l+1)
+                if (j > 2) U_star(l) = U_star(l) + gamma*Un(l-Nx)
+                if (j < jfin-1) U_star(l) = U_star(l) + gamma*Un(l+Nx)
+            enddo
+        enddo
 
 
     end function Lap_MatVectProduct
@@ -141,62 +114,39 @@ contains
 
         S_star = 0.
 
-        if (df%rank == 0) then
-            S_star(1+(jfin-1)*Nx:jfin*Nx) = gamma*Urecv_up(1:Nx)
-            do j=1,jfin-1
-                y = (jbeg-1+j)*df%hy
-                do i = 1, Nx
-                    l = (j-1)*Nx + i
-                    x = i*hx
+        do j=1,jfin
+            y = ((jbeg-1)-1+j)*df%hy
+            do i = 1, Nx
+                l = (j-1)*Nx + i
+                x = (i-1)*hx
 
-                    S_star(l) = Un(l) + dt*SourceTerme(df, x, y, t)
+                S_star(l) = Un(l) + dt*SourceTerme(df, x, y, t)
 
-                    if (i == 1) S_star(l) = S_star(l) - beta*BC_Left(df, x-hx, y)
-                    if (i == Nx) S_star(l) = S_star(l) - beta*BC_Right(df, x+hx, y)
+                if (i == 2) S_star(l) = S_star(l) - beta*BC_Left(df, x-hx, y)
+                if (i == Nx-1) S_star(l) = S_star(l) - beta*BC_Right(df, x+hx, y)
 
-                    if (j == 1) S_star(l) = S_star(l) - gamma*BC_Down(df, x, y-hy)
+                if (i == 1) S_star(l) = BC_Left(df, x, y)
+                if (i == Nx) S_star(l) = BC_Right(df, x, y)
+
+                if (df%rank == 0) then
+                    if (j == 1) S_star(l) = BC_Down(df, x, y)
+                    if (j == jfin) S_star(l) = Urecv_up(i)
+                    if (j == 2) S_star(l) = S_star(l) - gamma*BC_Down(df, x, y-hy)
                     if (j == jfin-1) S_star(l) = S_star(l) - gamma*Urecv_up(i)
-
-                enddo
-            enddo
-        elseif (df%rank == df%n_proc-1) then
-            S_star(1:Nx) = gamma*Urecv_down(1:Nx)
-            do j=2,jfin
-                y = (jbeg-1+j)*df%hy
-                do i = 1, Nx
-                    l = (j-1)*Nx + i
-                    x = i*hx
-
-                    S_star(l) = Un(l) + dt*SourceTerme(df, x, y, t)
-
-                    if (i == 1) S_star(l) = S_star(l) - beta*BC_Left(df, x-hx, y)
-                    if (i == Nx) S_star(l) = S_star(l) - beta*BC_Right(df, x+hx, y)
-
+                elseif (df%rank == df%n_proc-1) then
+                    if (j == 1) S_star(l) = Urecv_down(i)
+                    if (j == jfin) S_star(l) = BC_Up(df, x, y)
                     if (j == 2) S_star(l) = S_star(l) - gamma*Urecv_down(i)
-                    if (j == jfin) S_star(l) = S_star(l) - gamma*BC_Up(df, x, y+hy)
-
-                enddo
-            enddo
-        else
-            S_star(1:Nx) = gamma*Urecv_down(1:Nx)
-            S_star(1+(jfin-1)*Nx:jfin*Nx) = gamma*Urecv_up(1:Nx)
-            do j=2,jfin-1
-                y = (jbeg-1+j)*df%hy
-                do i=1,Nx
-                    l = (j-1)*Nx + i
-                    x = i*hx
-
-                    S_star(l) = Un(l) + dt*SourceTerme(df, x, y, t)
-
-                    if (i == 1) S_star(l) = S_star(l) - beta*BC_Left(df, x-hx, y)
-                    if (i == Nx) S_star(l) = S_star(l) - beta*BC_Right(df, x+hx, y)
-
+                    if (j == jfin-1) S_star(l) = S_star(l) - gamma*BC_Up(df, x, y+hy)
+                else
+                    if (j == 1) S_star(l) = Urecv_down(i)
+                    if (j == jfin) S_star(l) = Urecv_up(i)
                     if (j == 2) S_star(l) = S_star(l) - gamma*Urecv_down(i)
                     if (j == jfin-1) S_star(l) = S_star(l) - gamma*Urecv_up(i)
-                    
-                end do
+                endif
+
             enddo
-        endif
+        enddo
 
 
     end function SrcTermFunc
@@ -219,14 +169,13 @@ contains
         jend = df%jend
         jfin = df%jfin
 
-
         ! Initialize exacte solution and solution 
         ! with initial condition
         do j=1,jfin
-            y = (jbeg-1+j)*df%hy
+            y = ((jbeg-1)-1+j)*df%hy
             do i=1,Nx
                 l = (j-1)*Nx + i
-                x = i*df%hx
+                x = (i-1)*df%hx
 
                 Uexact(l) = ExactSolution(df, x, y, 0.0_pr)
                 U0(l) = InitialCondition(df, x, y)

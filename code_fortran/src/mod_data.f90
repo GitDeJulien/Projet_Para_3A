@@ -68,9 +68,9 @@ contains
         call parse_toml(filename, "overlap", data%overlap)
         call parse_toml(filename, "cas", data%cas)
 
-        data%hx = data%Lx / (data%Nx+1)
-        data%hy = data%Ly / (data%Ny+1)
-        data%N_pts = data%Nx*data%Ny
+        data%hx = data%Lx / (data%Nx-1)
+        data%hy = data%Ly / (data%Ny-1)
+        data%N_pts = (data%Nx)*(data%Ny)
 
         data%tfinal = data%dt*data%niter
         nb_iteration = CEILING((data%tfinal-data%t0)/data%dt, kind=selected_int_kind(8)) 

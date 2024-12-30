@@ -18,19 +18,19 @@ set palette defined ( 0 '#F7FBFF',\
 #set size ratio -1
 
 # si affichage 3D, force l'étendue de l'axe des z. A changer selon les cas.
-set zrange [0.0:0.2]
+#set zrange [0.0:0.2]
 set xrange [0.0:1.0]
 set yrange [0.0:1.0]
 
 # si affichage 3D, fixe le point de vue. A changer selon les cas.
-set view 100,100
+set view 120,100
 
 #pour faire un gif
 set term gif animate 
 set output "sol.gif"
 
-do for [i = 0:100] {
-    t=(i-1)*1.0
+do for [i = 0:20] {
+    t=i*1.0
     set title "t = ".sprintf("%f", t)." s"." (i = ".sprintf("%d", i).")"
     show title
     # fait un affichage 2D en couleur

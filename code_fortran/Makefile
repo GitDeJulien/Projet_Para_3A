@@ -6,7 +6,7 @@ NAME = ST-VENANT_FINIT_VOLUME
 FC = mpif90
 AR = ar rcs
 RM = rm -f
-RUN = mpirun -np 4 #change the number of proc if needed
+RUN = mpirun -np 3 #change the number of proc if needed
 
 # Directories
 SRC_DIR = ./src
@@ -15,7 +15,7 @@ INCLUDE_DIR = ./include
 BUILD_DIR = ./build
 
 # Flags for debug and release builds
-DEBUG_FFLAGS = -g -O0 -Wall -Wextra -Werror
+DEBUG_FFLAGS = -g -O0 -Wall -Wextra
 RELEASE_FFLAGS = -O2 -Wall -Wextra -Werror
 
 # Automatically find all source files (needed to be in the good order in function of dependancies)
