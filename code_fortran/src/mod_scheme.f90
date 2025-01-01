@@ -142,7 +142,7 @@ contains
         S_star = 0.
 
         if (df%rank == 0) then
-            S_star(1+(jfin-1)*Nx:jfin*Nx) = gamma*Urecv_up(1:Nx)
+            S_star(1+(jfin-1)*Nx:jfin*Nx) = Urecv_up(1:Nx)
             do j=1,jfin-1
                 y = (jbeg-1+j)*df%hy
                 do i = 1, Nx
@@ -160,7 +160,7 @@ contains
                 enddo
             enddo
         elseif (df%rank == df%n_proc-1) then
-            S_star(1:Nx) = gamma*Urecv_down(1:Nx)
+            S_star(1:Nx) = Urecv_down(1:Nx)
             do j=2,jfin
                 y = (jbeg-1+j)*df%hy
                 do i = 1, Nx
@@ -178,8 +178,8 @@ contains
                 enddo
             enddo
         else
-            S_star(1:Nx) = gamma*Urecv_down(1:Nx)
-            S_star(1+(jfin-1)*Nx:jfin*Nx) = gamma*Urecv_up(1:Nx)
+            S_star(1:Nx) = Urecv_down(1:Nx)
+            S_star(1+(jfin-1)*Nx:jfin*Nx) = Urecv_up(1:Nx)
             do j=2,jfin-1
                 y = (jbeg-1+j)*df%hy
                 do i=1,Nx
@@ -235,6 +235,38 @@ contains
         enddo
 
     end subroutine InitSol
+
+    subroutine ExactSolFunct(df, tn, Uexact)
+
+        !In
+        type(DataType), intent(in) :: df
+        real(pr), intent(in)       :: tn
+
+        !Out
+        real(pr), dimension(:), intent(out) :: Uexact
+
+        !Local
+        integer  :: i, j, l
+        integer  :: Nx, jend, jbeg, jfin
+        real(pr) :: x, y
+
+        Nx = df%Nx
+        jbeg = df%jbeg
+        jend = df%jend
+        jfin = df%jfin
+
+        do j=1,jfin
+            y = (jbeg-1+j)*df%hy
+            do i=1,Nx
+                l = (j-1)*Nx + i
+                x = i*df%hx
+
+                Uexact(l) = ExactSolution(df, x, y, tn)
+
+            enddo
+        enddo
+
+    end subroutine ExactSolFunct
 
 
     subroutine SendMessage(df, Un)

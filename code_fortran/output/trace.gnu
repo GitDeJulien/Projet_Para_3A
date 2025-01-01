@@ -18,7 +18,7 @@ set palette defined ( 0 '#F7FBFF',\
 #set size ratio -1
 
 # si affichage 3D, force l'étendue de l'axe des z. A changer selon les cas.
-set zrange [0.0:0.2]
+#set zrange [0.0:0.2]
 set xrange [0.0:1.0]
 set yrange [0.0:1.0]
 

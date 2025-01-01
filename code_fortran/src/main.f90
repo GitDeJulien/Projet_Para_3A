@@ -64,6 +64,7 @@ program DiffusionEquation
 
         !One more step in time
         call Advance(df, Un, tn, Unp1)
+        call ExactSolFunct(df, tn, Uexact)
 
         !Update solution and time step
         Un = Unp1
