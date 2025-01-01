@@ -29,7 +29,7 @@ set view 120,100
 set term gif animate 
 set output "sol.gif"
 
-do for [i = 0:20] {
+do for [i = 0:10] {
     t=i*1.0
     set title "t = ".sprintf("%f", t)." s"." (i = ".sprintf("%d", i).")"
     show title

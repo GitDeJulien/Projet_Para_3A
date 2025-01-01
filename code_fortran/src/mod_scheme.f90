@@ -67,7 +67,7 @@ contains
         real(pr), intent(in)               :: t
 
         !Out
-        real(pr), dimension(1:df%Nx*(df%jfin)) :: S_star
+        real(pr), dimension(1:df%Nx*df%jfin) :: S_star
 
         !Local
         integer  :: i,j
@@ -102,11 +102,11 @@ contains
         Urecv_up = 0.
 
         if (df%rank /= df%n_proc-1) then
-            call MPI_RECV(Urecv_up, Nx, MPI_DOUBLE, df%rank+1, tag1*(df%rank), MPI_COMM_WORLD, status, ierr)
+            call MPI_RECV(Urecv_up, Nx, MPI_DOUBLE_PRECISION, df%rank+1, tag1*(df%rank), MPI_COMM_WORLD, status, ierr)
             !print*, "rank_recv:", df%rank, "Urecv_up:", Urecv_up
         endif
         if (df%rank /= 0) then
-            call MPI_RECV(Urecv_down, Nx, MPI_DOUBLE, df%rank-1, tag2*(df%rank), MPI_COMM_WORLD, status, ierr)
+            call MPI_RECV(Urecv_down, Nx, MPI_DOUBLE_PRECISION, df%rank-1, tag2*(df%rank), MPI_COMM_WORLD, status, ierr)
             !print*, "rank_recv:", df%rank, "Urecv_down:", Urecv_down
         endif
         
@@ -169,6 +169,9 @@ contains
         jend = df%jend
         jfin = df%jfin
 
+        Uexact = 0.0_pr
+        U0 = 0.0_pr
+
         ! Initialize exacte solution and solution 
         ! with initial condition
         do j=1,jfin
@@ -205,11 +208,11 @@ contains
         ! -- Send messages (lines)
         if (df%rank /= df%n_proc-1) then
             call MPI_SEND(Un(1+Nx*(jfin-df%overlap/2-1))&
-            , Nx, MPI_DOUBLE, df%rank+1, tag2*(df%rank+1), MPI_COMM_WORLD, ierr)
+            , Nx, MPI_DOUBLE_PRECISION, df%rank+1, tag2*(df%rank+1), MPI_COMM_WORLD, ierr)
         endif
         if (df%rank /= 0) then
             call MPI_SEND(Un(1+Nx*(df%overlap/2))&
-            , Nx, MPI_DOUBLE, df%rank-1, tag1*(df%rank-1), MPI_COMM_WORLD, ierr)
+            , Nx, MPI_DOUBLE_PRECISION, df%rank-1, tag1*(df%rank-1), MPI_COMM_WORLD, ierr)
         endif
 
     end subroutine SendMessage
