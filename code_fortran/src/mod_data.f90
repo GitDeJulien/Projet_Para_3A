@@ -30,6 +30,8 @@ module data_mod
     ![BC SCHWARZ METHODE] (1:Dirichlet, 2:Robin)
     integer  :: BC_Schwarz
     integer  :: overlap
+    real(pr) :: acoeff
+    real(pr) :: bcoeff
     
     ![CAS TEST]
     integer  :: cas
@@ -66,6 +68,9 @@ contains
         call parse_toml(filename, "D", data%D)
         call parse_toml(filename, "BC_Schwarz", data%BC_Schwarz)
         call parse_toml(filename, "overlap", data%overlap)
+        call parse_toml(filename, "acoeff", data%acoeff)
+        call parse_toml(filename, "bcoeff", data%bcoeff)
+        
         call parse_toml(filename, "cas", data%cas)
 
         data%hx = data%Lx / (data%Nx-1)

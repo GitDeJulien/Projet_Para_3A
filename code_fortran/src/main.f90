@@ -80,7 +80,6 @@ program DiffusionEquation
 
     enddo
 
-
     ! Finalize MPI
     deallocate(Un)
     deallocate(Unp1)

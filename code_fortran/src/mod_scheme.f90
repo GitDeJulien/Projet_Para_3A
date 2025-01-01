@@ -41,14 +41,24 @@ contains
         beta = -dt*D*1._pr/hx**2
         gamma = -dt*D*1._pr/hy**2
 
-        U_star = Un
+        !U_star = Un
+        U_star(1:Nx) = Un(1:Nx)
+        U_star(1+(jfin-1)*Nx:jfin*Nx) = Un(1+(jfin-1)*Nx:jfin*Nx)
+
+        do l=1,Nx*jfin
+            j = l/(Nx+1) + 1
+            if (MOD(l-1,Nx) == 0) U_star(l) = Un(l)
+            if (MOD(l,Nx) == 0) U_star(l) = Un(l)
+        enddo
+
 
         do j=2,jfin-1
             do i=2,Nx-1
                 l = (j-1)*Nx + i
+
                 U_star(l) = (1.0_pr + alpha)*Un(l)
 
-                if (i > 2)  U_star(l) = U_star(l) + beta*Un(l-1)
+                if (i > 2) U_star(l) = U_star(l) + beta*Un(l-1)
                 if (i < Nx-1) U_star(l) = U_star(l) + beta*Un(l+1)
                 if (j > 2) U_star(l) = U_star(l) + gamma*Un(l-Nx)
                 if (j < jfin-1) U_star(l) = U_star(l) + gamma*Un(l+Nx)
@@ -77,6 +87,7 @@ contains
         real(pr) :: hx, hy, dt, D, x, y
         real(pr) :: alpha, beta, gamma
         real(pr), dimension(1:df%Nx) :: Urecv_up, Urecv_down
+
 
         !MPI
         integer  :: ierr
@@ -114,30 +125,9 @@ contains
 
         S_star = 0.
 
-        if (df%rank == 0) then
-            do i=1,Nx
-                S_star(i) = BC_Down(df, (i-1)*hx, 0.0_pr)
-            enddo
-            S_star(1+(jfin-1)*Nx:jfin*Nx) = Urecv_up(1:Nx)
-        elseif (df%rank == df%n_proc-1) then
-            S_star(1:Nx) = Urecv_down(1:Nx)
-            do i=1,Nx
-                S_star((jfin-1)*Nx+i) = BC_Up(df, (i-1)*hx, ((jbeg-1)-1+jfin)*df%hy)
-            enddo
-        else
-            S_star(1:Nx) = Urecv_down(1:Nx)
-            S_star(1+(jfin-1)*Nx:jfin*Nx) = Urecv_up(1:Nx)
-        endif
-
-        ! -- Left right boundary condition
-        do l=1,Nx*jfin
-            j = l/(Nx+1) + 1
-            if (MOD(l-1,Nx) == 0) S_star(l) = BC_Left(df, 0.0_pr, ((jbeg-1)-1+j)*df%hy)
-            if (MOD(l,Nx) == 0) S_star(l) = BC_Right(df, (Nx-1)*hx, ((jbeg-1)-1+j)*df%hy)
-        enddo
-
+        !> -- Source terme without bounds
         do j=2,jfin-1
-            y = ((jbeg-1)-1+j)*df%hy
+            y = ((jbeg-1)-1+j)*hy
             do i = 2, Nx-1
                 l = (j-1)*Nx + i
                 x = (i-1)*hx
@@ -159,6 +149,31 @@ contains
                 endif
 
             enddo
+        enddo
+
+        !!> -- Boundary conditions -- <!!
+
+        !> -- Up and Down Boundary Condition
+        if (df%rank == 0) then
+            do i=1,Nx
+                S_star(i) = BC_Down(df, (i-1)*hx, 0.0_pr)
+            enddo
+            S_star(1+(jfin-1)*Nx:jfin*Nx) = Urecv_up(1:Nx)
+        elseif (df%rank == df%n_proc-1) then
+            S_star(1:Nx) = Urecv_down(1:Nx)
+            do i=1,Nx
+                S_star((jfin-1)*Nx+i) = BC_Up(df, (i-1)*hx, ((jbeg-1)-1+jfin)*hy)
+            enddo
+        else
+            S_star(1:Nx) = Urecv_down(1:Nx)
+            S_star(1+(jfin-1)*Nx:jfin*Nx) = Urecv_up(1:Nx)
+        endif
+
+        !> -- Left and Right Boundary Condition
+        do l=1,Nx*jfin
+            j = l/(Nx+1) + 1
+            if (MOD(l-1,Nx) == 0) S_star(l) = BC_Left(df, 0.0_pr, ((jbeg-1)-1+j)*hy)
+            if (MOD(l,Nx) == 0) S_star(l) = BC_Right(df, (Nx-1)*hx, ((jbeg-1)-1+j)*hy)
         enddo
 
 
@@ -224,7 +239,7 @@ contains
             y = (jbeg-1+j)*df%hy
             do i=1,Nx
                 l = (j-1)*Nx + i
-                x = i*df%hx
+                x = (i-1)*df%hx
 
                 Uexact(l) = ExactSolution(df, x, y, tn)
 
@@ -242,6 +257,8 @@ contains
         !Local
         integer  :: Nx
         integer  :: jfin
+        real(pr) :: coeff
+        real(pr), dimension(1:df%Nx) :: Usend_up, Usend_down
 
         !MPI
         integer  :: ierr
@@ -249,14 +266,40 @@ contains
         Nx = df%Nx
         jfin = df%jfin
 
+        coeff = 1._pr/(df%acoeff/df%hy+df%bcoeff)
+
         ! -- Send messages (lines)
-        if (df%rank /= df%n_proc-1) then
-            call MPI_SEND(Un(1+Nx*(jfin-df%overlap/2-1))&
-            , Nx, MPI_DOUBLE_PRECISION, df%rank+1, tag2*(df%rank+1), MPI_COMM_WORLD, ierr)
-        endif
-        if (df%rank /= 0) then
-            call MPI_SEND(Un(1+Nx*(df%overlap/2))&
-            , Nx, MPI_DOUBLE_PRECISION, df%rank-1, tag1*(df%rank-1), MPI_COMM_WORLD, ierr)
+        if (df%BC_Schwarz == 1) then
+
+            if (df%rank /= df%n_proc-1) then
+                call MPI_SEND(Un(1+Nx*(jfin-df%overlap/2-1))&
+                , Nx, MPI_DOUBLE_PRECISION, df%rank+1, tag2*(df%rank+1), MPI_COMM_WORLD, ierr)
+            endif
+            if (df%rank /= 0) then
+                call MPI_SEND(Un(1+Nx*(df%overlap/2))&
+                , Nx, MPI_DOUBLE_PRECISION, df%rank-1, tag1*(df%rank-1), MPI_COMM_WORLD, ierr)
+            endif
+
+        elseif (df%BC_Schwarz == 2) then
+
+            Usend_up = coeff*(df%acoeff/df%hy*(Un(1+Nx*(jfin-df%overlap/2-1)) &
+            - Un(1+Nx*(jfin-df%overlap/2))) + &
+            df%bcoeff*Un(1+Nx*(jfin-df%overlap/2-1)))
+
+            Usend_down = coeff*(df%acoeff/df%hy*(Un(1+Nx*(df%overlap/2)) - &
+            Un(1+Nx*(df%overlap/2-1))) + &
+            df%bcoeff*Un(1+Nx*(df%overlap/2)))
+
+            if (df%rank /= df%n_proc-1) then
+                call MPI_SEND(Usend_up, Nx, MPI_DOUBLE_PRECISION, df%rank+1, tag2*(df%rank+1), MPI_COMM_WORLD, ierr)
+            endif
+            if (df%rank /= 0) then
+                call MPI_SEND(Usend_down, Nx, MPI_DOUBLE_PRECISION, df%rank-1, tag1*(df%rank-1), MPI_COMM_WORLD, ierr)
+            endif
+
+        else
+            print*, "Error: No Schwarz Boundary condition of this kind. Please change the key."
+            stop
         endif
 
     end subroutine SendMessage
