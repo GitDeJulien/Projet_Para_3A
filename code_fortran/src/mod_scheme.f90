@@ -114,9 +114,31 @@ contains
 
         S_star = 0.
 
-        do j=1,jfin
+        if (df%rank == 0) then
+            do i=1,Nx
+                S_star(i) = BC_Down(df, (i-1)*hx, 0.0_pr)
+            enddo
+            S_star(1+(jfin-1)*Nx:jfin*Nx) = Urecv_up(1:Nx)
+        elseif (df%rank == df%n_proc-1) then
+            S_star(1:Nx) = Urecv_down(1:Nx)
+            do i=1,Nx
+                S_star((jfin-1)*Nx+i) = BC_Up(df, (i-1)*hx, ((jbeg-1)-1+jfin)*df%hy)
+            enddo
+        else
+            S_star(1:Nx) = Urecv_down(1:Nx)
+            S_star(1+(jfin-1)*Nx:jfin*Nx) = Urecv_up(1:Nx)
+        endif
+
+        ! -- Left right boundary condition
+        do l=1,Nx*jfin
+            j = l/(Nx+1) + 1
+            if (MOD(l-1,Nx) == 0) S_star(l) = BC_Left(df, 0.0_pr, ((jbeg-1)-1+j)*df%hy)
+            if (MOD(l,Nx) == 0) S_star(l) = BC_Right(df, (Nx-1)*hx, ((jbeg-1)-1+j)*df%hy)
+        enddo
+
+        do j=2,jfin-1
             y = ((jbeg-1)-1+j)*df%hy
-            do i = 1, Nx
+            do i = 2, Nx-1
                 l = (j-1)*Nx + i
                 x = (i-1)*hx
 
@@ -125,22 +147,13 @@ contains
                 if (i == 2) S_star(l) = S_star(l) - beta*BC_Left(df, x-hx, y)
                 if (i == Nx-1) S_star(l) = S_star(l) - beta*BC_Right(df, x+hx, y)
 
-                if (i == 1) S_star(l) = BC_Left(df, x, y)
-                if (i == Nx) S_star(l) = BC_Right(df, x, y)
-
                 if (df%rank == 0) then
-                    if (j == 1) S_star(l) = BC_Down(df, x, y)
-                    if (j == jfin) S_star(l) = Urecv_up(i)
                     if (j == 2) S_star(l) = S_star(l) - gamma*BC_Down(df, x, y-hy)
                     if (j == jfin-1) S_star(l) = S_star(l) - gamma*Urecv_up(i)
                 elseif (df%rank == df%n_proc-1) then
-                    if (j == 1) S_star(l) = Urecv_down(i)
-                    if (j == jfin) S_star(l) = BC_Up(df, x, y)
                     if (j == 2) S_star(l) = S_star(l) - gamma*Urecv_down(i)
                     if (j == jfin-1) S_star(l) = S_star(l) - gamma*BC_Up(df, x, y+hy)
                 else
-                    if (j == 1) S_star(l) = Urecv_down(i)
-                    if (j == jfin) S_star(l) = Urecv_up(i)
                     if (j == 2) S_star(l) = S_star(l) - gamma*Urecv_down(i)
                     if (j == jfin-1) S_star(l) = S_star(l) - gamma*Urecv_up(i)
                 endif
@@ -188,6 +201,37 @@ contains
 
     end subroutine InitSol
 
+    subroutine ExactSolFunct(df, tn, Uexact)
+
+        !In
+        type(DataType), intent(in) :: df
+        real(pr), intent(in)       :: tn
+
+        !Out
+        real(pr), dimension(:), intent(out) :: Uexact
+
+        !Local
+        integer  :: i, j, l
+        integer  :: Nx, jend, jbeg, jfin
+        real(pr) :: x, y
+
+        Nx = df%Nx
+        jbeg = df%jbeg
+        jend = df%jend
+        jfin = df%jfin
+
+        do j=1,jfin
+            y = (jbeg-1+j)*df%hy
+            do i=1,Nx
+                l = (j-1)*Nx + i
+                x = i*df%hx
+
+                Uexact(l) = ExactSolution(df, x, y, tn)
+
+            enddo
+        enddo
+
+    end subroutine ExactSolFunct
 
     subroutine SendMessage(df, Un)
 
