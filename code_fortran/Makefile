@@ -6,7 +6,7 @@ NAME = ST-VENANT_FINIT_VOLUME
 FC = mpif90
 AR = ar rcs
 RM = rm -f
-RUN = mpirun -np 3 #change the number of proc if needed
+RUN = mpirun -np 4 #change the number of proc if needed
 
 # Directories
 SRC_DIR = ./src
@@ -92,6 +92,8 @@ clear:
 	$(RM) ./output/vtk/*.vtk
 	$(RM) ./output/dat/exact/*.dat
 	$(RM) ./output/vtk/exact/*.vtk
+	$(RM) ./output/time/*.dat
+
 
 
 

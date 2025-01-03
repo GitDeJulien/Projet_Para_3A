@@ -23,7 +23,7 @@ contains
         integer  :: i,j
         integer  :: l, Nx, Ny, N_pts
         integer  :: jbeg, jend, jfin
-        real(pr) :: hx, hy, dt, D
+        real(pr) :: hx, hy, dt, D, coeff
         real(pr) :: alpha, beta, gamma
 
         dt = df%dt
@@ -41,9 +41,18 @@ contains
         beta = -dt*D*1._pr/hx**2
         gamma = -dt*D*1._pr/hy**2
 
-        !U_star = Un
-        U_star(1:Nx) = Un(1:Nx)
-        U_star(1+(jfin-1)*Nx:jfin*Nx) = Un(1+(jfin-1)*Nx:jfin*Nx)
+        coeff = -dt*D*df%acoeff/(hy*(df%acoeff/df%hy+df%bcoeff))
+
+        if (df%BC_Schwarz == 1) then
+            U_star(1:Nx) = Un(1:Nx)
+            U_star(1+(jfin-1)*Nx:jfin*Nx) = Un(1+(jfin-1)*Nx:jfin*Nx)
+        else if (df%BC_Schwarz == 2) then
+            U_star(1:Nx) = coeff*Un(1+Nx:2*Nx) + Un(1:Nx)
+            U_star(1+(jfin-1)*Nx:jfin*Nx) = coeff*Un(1+(jfin-2)*Nx:(jfin-1)*Nx) + Un(1+(jfin-1)*Nx:jfin*Nx)
+        else
+            print*, "Error: No Schwarz Boundary condition of this kind. Please change the key."
+            stop
+        endif
 
         do l=1,Nx*jfin
             j = l/(Nx+1) + 1
@@ -60,6 +69,7 @@ contains
 
                 if (i > 2) U_star(l) = U_star(l) + beta*Un(l-1)
                 if (i < Nx-1) U_star(l) = U_star(l) + beta*Un(l+1)
+                
                 if (j > 2) U_star(l) = U_star(l) + gamma*Un(l-Nx)
                 if (j < jfin-1) U_star(l) = U_star(l) + gamma*Un(l+Nx)
             enddo
@@ -108,7 +118,6 @@ contains
         beta = -dt*D*1._pr/hx**2
         gamma = -dt*D*1._pr/hy**2
 
-        ! print*, "rank_recv:", df%rank, "shape down:", shape(Urecv_down), "shape up:", shape(Urecv_up)
         Urecv_down = 0.
         Urecv_up = 0.
 
@@ -236,7 +245,7 @@ contains
         jfin = df%jfin
 
         do j=1,jfin
-            y = (jbeg-1+j)*df%hy
+            y = ((jbeg-1)-1+j)*df%hy
             do i=1,Nx
                 l = (j-1)*Nx + i
                 x = (i-1)*df%hx

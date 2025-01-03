@@ -2,13 +2,13 @@
 
 [SPACE] (2D)
 Lx = 1.0
-Nx = 40
+Nx = 50
 Ly = 1.0
-Ny = 40
+Ny = 50
 
 [TIME] (implicite scheme)
 t0 = 0.0
-niter = 5
+niter = 100
 dt = 1.0
 cfl = 0.8
 

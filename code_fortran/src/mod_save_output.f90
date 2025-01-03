@@ -159,4 +159,29 @@ contains
         
     end subroutine SaveErr
 
+    subroutine SaveTime(df, elapsed_time)
+
+        !In
+        type(DataType), intent(in) :: df
+        real(pr), intent(in)       :: elapsed_time
+
+        !Local
+        integer :: unit
+        character(len=125) :: ch_n_proc, ch_overlap, ch_Nx
+
+        unit = 10
+        write(ch_n_proc, '(I5)') df%n_proc
+        write(ch_overlap, '(I5)') df%overlap
+        write(ch_Nx, '(I5)') df%Nx
+
+
+        if (df%rank==0) open(newunit=unit,&
+        file="./output/time/np."//trim(adjustl(ch_n_proc))//".Nx."//trim(adjustl(ch_Nx))//".dat",&
+        status='replace', action="write")
+
+        write(unit, *) 1./df%n_proc * elapsed_time
+
+        if (df%rank==0) close(unit)
+    end subroutine SaveTime
+
 end module save_output_mod

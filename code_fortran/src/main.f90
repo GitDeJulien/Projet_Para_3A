@@ -11,6 +11,8 @@ program DiffusionEquation
     integer                             :: t_iter, io
     real(pr)                            :: tn
     real(pr), dimension(:), allocatable :: Un, Unp1, Uexact
+    real(pr)                            :: start_time, end_time
+    real(pr)                            :: elapsed_time_loc, elapsed_time
 
     ! MPI variables
     integer :: ierr
@@ -46,15 +48,15 @@ program DiffusionEquation
 
     print*, df%rank, "size:", size(Un)
     if (df%rank == 0) print*, df%rank, "N_pts:", df%N_pts
-    !if (df%rank == 2) print*, df%rank, "Un(0):", Un(0), "Un(fin):", Un((df%Nx+2)*(df%jfin+1)+df%Nx+1)
     
+    start_time = MPI_Wtime()
     call InitSol(df, Un, Uexact)
 
     ! Save initial solution, exact solution and error
     call SaveSol(df, Un, 0, '.dat')
     call SaveSolExact(df, Uexact, 0, '.dat')
 
-    open(newunit=io, file="./output/err.dat", status='replace', action="write")
+    if (df%rank==0) open(newunit=io, file="./output/err.dat", status='replace', action="write")
     call SaveErr(df, Un, Uexact, 0, df%t0, io)
     
     Unp1 = Un
@@ -79,6 +81,12 @@ program DiffusionEquation
         call SaveErr(df, Un, Uexact, t_iter, tn, io)
 
     enddo
+
+    end_time = MPI_Wtime()
+    elapsed_time_loc = end_time - start_time
+
+    call MPI_Reduce(elapsed_time_loc, elapsed_time, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+    call SaveTime(df, elapsed_time)
 
     ! Finalize MPI
     deallocate(Un)

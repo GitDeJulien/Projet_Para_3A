@@ -86,7 +86,7 @@ module functions_mod
             res = sin(x) + cos(y)
 
         CASE(3)
-            res = (2*pi*df%D - 1) * sin(pi*x)*sin(pi*y) * exp(-t)
+            res = (2*pi**2*df%D - 1) * sin(pi*x)*sin(pi*y) * exp(-t)
 
         CASE DEFAULT
             print*,"This case is not allowed"
