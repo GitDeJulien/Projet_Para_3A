@@ -9,7 +9,7 @@ Ny = 40
 [TIME] (implicite scheme)
 t0 = 0.0
 niter = 100
-dt = 1.0
+dt = 0.1
 cfl = 0.8
 
 [Diffusion coefficient]
@@ -18,6 +18,8 @@ D = 1.0
 [SCHWARZ METHODE] (1:Dirichlet, 2:Robin)
 BC_Schwarz = 1
 overlap = 3
+acoeff = 1.0
+bcoeff = 1.0
 
 [CAS TEST]
-cas = 3
+cas = 2

@@ -23,7 +23,7 @@ set xrange [0.0:1.0]
 set yrange [0.0:1.0]
 
 # si affichage 3D, fixe le point de vue. A changer selon les cas.
-set view 100,100
+set view 90,90
 
 #pour faire un gif
 set term gif animate 

@@ -22,7 +22,7 @@ module functions_mod
         SELECT CASE(df%cas)
 
         CASE(1)
-            res = 20*ExactSolution(df, x, y, 0.0_pr)
+            res = 0.5*ExactSolution(df, x, y, 0.0_pr)
 
         CASE(2)
             res = cos(x)
