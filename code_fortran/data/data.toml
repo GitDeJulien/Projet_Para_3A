@@ -17,9 +17,9 @@ D = 1.0
 
 [SCHWARZ METHODE] (1:Dirichlet, 2:Robin)
 BC_Schwarz = 1
-overlap = 3
+overlap = 4
 acoeff = 1.0
 bcoeff = 1.0
 
 [CAS TEST]
-cas = 2
+cas = 3

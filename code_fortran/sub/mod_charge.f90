@@ -46,13 +46,13 @@ contains
 
         call charge(me, n, n_proc, bis_ibeg, bis_iend)
 
-        ibeg = MAX(1, bis_ibeg - overlap/2 - MOD(overlap, 2))
-        iend = MIN(n, bis_iend + overlap/2)
+        ! ibeg = MAX(1, bis_ibeg - overlap/2 - MOD(overlap, 2))
+        ! iend = MIN(n, bis_iend + overlap/2)
 
-        ! ibeg = MAX(1, bis_ibeg - overlap)
-        ! iend = MIN(n, bis_iend + overlap)
+        ibeg = MAX(1, bis_ibeg)
+        iend = MIN(n, bis_iend + overlap)
 
-        ! print*, "me:", me, "ibeg:", ibeg, "iend", iend
+        print*, "me:", me, "ibeg:", ibeg, "iend", iend
 
     end subroutine overlapping_charge
     
