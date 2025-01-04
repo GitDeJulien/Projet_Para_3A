@@ -30,6 +30,12 @@ module functions_mod
         CASE(3)
             res = sin(pi*x)*sin(pi*y)
 
+        CASE(4)
+            res = exp(-(x-df%Lx/2)**2) * exp(-(y-df%Ly/2)**2)
+
+        CASE(5)
+            res = (1.0_pr-x**2)*(1.0_pr-y**2) + 1.0_pr
+
         CASE DEFAULT
             res = exp(x-y)
 
@@ -59,9 +65,12 @@ module functions_mod
         CASE(3)
             res = sin(pi*x)*sin(pi*y)*exp(-t)
 
+        CASE(5)
+            res = (1.0_pr-x**2)*(1.0_pr-y**2) + 1.0_pr
+
         CASE DEFAULT
-            res = -1._pr
-            print*,"No analytical solution computed"
+            res = 0.0_pr
+            !print*,"No analytical solution computed"
 
         END SELECT
 
@@ -87,6 +96,12 @@ module functions_mod
 
         CASE(3)
             res = (2*pi*df%D - 1) * sin(pi*x)*sin(pi*y) * exp(-t)
+
+        CASE(4)
+            res = exp(-(x-df%Lx/2)**2) * exp(-(y-df%Ly/2)**2) * cos(pi/2*t)
+
+        CASE(5)
+            res = 2*df%D*((1.0_pr-y**2) + (1.0_pr-x**2))
 
         CASE DEFAULT
             print*,"This case is not allowed"
@@ -116,6 +131,12 @@ module functions_mod
         CASE(3)
             res = 0.0_pr
 
+        CASE(4)
+            res = 1.0_pr
+
+        CASE(5)
+            res = 1.0_pr
+
         CASE DEFAULT
             print*,"This case is not allowed"
 
@@ -143,6 +164,12 @@ module functions_mod
 
         CASE(3)
             res = 0.0_pr
+
+        CASE(4)
+            res = 1.0_pr
+
+        CASE(5)
+            res = 1.0_pr
 
         CASE DEFAULT
             print*,"This case is not allowed"
@@ -172,6 +199,12 @@ module functions_mod
         CASE(3)
             res = 0.0_pr
 
+        CASE(4)
+            res = 0.0_pr
+
+        CASE(5)
+            res = 1.0_pr
+
         CASE DEFAULT
             print*,"This case is not allowed"
 
@@ -199,6 +232,12 @@ module functions_mod
 
         CASE(3)
             res = 0.0_pr
+
+        CASE(4)
+            res = 0.0_pr
+
+        CASE(5)
+            res = 1.0_pr
 
         CASE DEFAULT
             print*,"This case is not allowed"

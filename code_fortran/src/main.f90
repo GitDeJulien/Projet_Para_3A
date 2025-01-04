@@ -11,6 +11,8 @@ program DiffusionEquation
     integer                             :: t_iter, io
     real(pr)                            :: tn
     real(pr), dimension(:), allocatable :: Un, Unp1, Uexact
+    real(pr)                            :: start_time, end_time
+    real(pr)                            :: elapsed_time_loc, elapsed_time
 
     ! MPI variables
     integer :: ierr
@@ -40,19 +42,22 @@ program DiffusionEquation
     allocate(Un(df%Nx*df%jfin))
     allocate(Unp1(df%Nx*df%jfin))
     allocate(Uexact(df%Nx*df%jfin))
-
-    !overlapping lines = [(n_proc-1)*overlap - n_proc]
-
-    ! print*, df%rank, "size:", size(Un)
-    ! if (df%rank == 0) print*, df%rank, "N_pts:", df%N_pts
     
+    start_time = MPI_Wtime()
     call InitSol(df, Un, Uexact)
 
     ! Save initial solution, exact solution and error
     call SaveSol(df, Un, 0, '.dat')
     call SaveSolExact(df, Uexact, 0, '.dat')
 
-    open(newunit=io, file="./output/err.dat", status='replace', action="write")
+    if (df%BC_Schwarz == 1) then
+        open(newunit=io, file="./output/err_D.dat", status='replace', action="write")
+    elseif (df%BC_Schwarz == 2) then
+        open(newunit=io, file="./output/err_R.dat", status='replace', action="write")
+    else
+        print*, "No boundary condition for Schwarz method recognize"
+        stop
+    endif
     
     Unp1 = Un
 
@@ -76,6 +81,13 @@ program DiffusionEquation
         call SaveErr(df, Un, Uexact, t_iter, tn, io)
 
     enddo
+
+    !> -- Compute total time
+    end_time = MPI_Wtime()
+    elapsed_time_loc = end_time - start_time
+
+    call MPI_Reduce(elapsed_time_loc, elapsed_time, 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, MPI_COMM_WORLD, ierr)
+    !call SaveTime(df, elapsed_time)
 
 
     ! Finalize MPI
