@@ -94,6 +94,8 @@ clear:
 	$(RM) ./output/vtk/exact/*.vtk
 	$(RM) ./output/time/*dat
 	$(RM) ./output/time/*png
+	$(RM) ./output/error/*dat
+	$(RM) ./output/error/*png
 	$(RM) ./output/*png
 	$(RM) ./output/*gif
 

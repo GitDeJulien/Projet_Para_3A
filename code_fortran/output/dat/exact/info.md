@@ -1,0 +1,1 @@
+# output solution exacte format .dat

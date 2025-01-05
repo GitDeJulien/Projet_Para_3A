@@ -62,9 +62,9 @@ program DiffusionEquation
 
     ! Open error_*.dat file to save error
     if (df%BC_Schwarz == 1) then
-        open(newunit=io, file="./output/err_D.dat", status='replace', action="write")
+        open(newunit=io, file="./output/error/err_D.dat", status='replace', action="write")
     elseif (df%BC_Schwarz == 2) then
-        open(newunit=io, file="./output/err_R.dat", status='replace', action="write")
+        open(newunit=io, file="./output/error/err_R.dat", status='replace', action="write")
     else
         print*, "No boundary condition for Schwarz method recognize"
         stop
