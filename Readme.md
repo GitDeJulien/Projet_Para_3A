@@ -33,8 +33,8 @@ Ce module permet de lire les données dans le fichier _data.toml_ (path = ./data
 
 ### Contenu
 
-- _type_ DataType : regroupe les données
-- _subroutine_ config_data : lis les données dans _data.toml_
+- _type_ __DataType__ : regroupe les données
+- _subroutine_ __config_data__ : lis les données dans _data.toml_
 
 ## src/mod_functions.f90
 
@@ -42,13 +42,13 @@ Ce module regroupe les fonctions utiles à la définition du problème
 
 ### Contenu
 
- - _function_ InitialCondition : Définie la condition initiale
- - _function_ ExactSolution : Définie la solution exacte si celle-ci ce calcul, sinon renvoie $0.0$
- - _function_ SourceTerme : Définie la fonction source
- - _function_ BC_Left : Définie la fonction de bord gauche
- - _function_ BC_Right : Définie la fonction de bord droit
- - _function_ BC_Up : Définie la fonction de bord haut
- - _function_ BC_Down : Définie la fonction de bord bas
+ - _function_ __InitialCondition__ : Définie la condition initiale
+ - _function_ __ExactSolution__ : Définie la solution exacte si celle-ci ce calcul, sinon renvoie $0.0$
+ - _function_ __SourceTerme__ : Définie la fonction source
+ - _function_ __BC_Left__ : Définie la fonction de bord gauche
+ - _function_ __BC_Right__ : Définie la fonction de bord droit
+ - _function_ __BC_Up__ : Définie la fonction de bord haut
+ - _function_ __BC_Down__ : Définie la fonction de bord bas
 
 ## src/mod_scheme.f90
 
@@ -56,11 +56,11 @@ Ce module permet détablir le produit matrice vecteur qui nous intéresse ainsi 
 
 ### Contenu
 
- - _function_ Lap_MatVectProduct : Définie le produit matrice vecteur du laplacien avec résolution Euler Implicite.
- - _function_ SourceTerme : Définie le terme source
- - _subroutine_ InitSol : Définie la solution initiale approchée et exacte si elle est définie.
- - _subroutine_ ExactSolFunct : Définie la solution exacte à chaque temps
- - _subroutine_ SendMessage : Permet l'envoi de messages en fonction des deux conditions au limites définies entre processeur (Dirichlet et Robin)
+ - _function_ __Lap_MatVectProduct__ : Définie le produit matrice vecteur du laplacien avec résolution Euler Implicite.
+ - _function_ __SourceTerme__ : Définie le terme source
+ - _subroutine_ __InitSol__ : Définie la solution initiale approchée et exacte si elle est définie.
+ - _subroutine_ __ExactSolFunct__ : Définie la solution exacte à chaque temps
+ - _subroutine_ __SendMessage__ : Permet l'envoi de messages en fonction des deux conditions au limites définies entre processeur (Dirichlet et Robin)
 
 ## src/linear_algebra.f90
 
@@ -68,7 +68,7 @@ Ce module définie un solveur BiCGStab (Bi Conjugate Gradient Stabilized) pour r
 
 ### Contenu
 
- - _subroutine_ Lap_BiCGStab : Résout le système AX = b en utilisant le produit matrice vecteur du laplacien définie dans 'mod_scheme.f90'
+ - _subroutine_ __Lap_BiCGStab__ : Résout le système AX = b en utilisant le produit matrice vecteur du laplacien définie dans 'mod_scheme.f90'
 
 ## src/time_advance.f90
 
@@ -76,7 +76,7 @@ Ce module permet de faire une itération en temps
 
 ### Contenu
 
- - _subroutine_ Advance : Construit d'abord le terme source puis appelle le BiCGStab pour la résolution.
+ - _subroutine_ __Advance__ : Construit d'abord le terme source puis appelle le BiCGStab pour la résolution.
 
 
 ## src/mod_save_output.f90
@@ -85,28 +85,14 @@ Ce module permet de la sauvegarde dans des fichier _.dat_ ou _.vtk_ des données
 
 ### Contenu
 
- - _subroutine_ SaveSol : Sauvegarde la solution approchée
- - _subroutine_ SaveSolExact : Sauvegarde la solution exacte si elle est calculée
- - _subroutine_ SaveErr : Sauvegarde l'erreur en norme 2 entre la solution exacte et approchée 
- - _subroutine_ SaveTime : Sauvegarde le temps d'exécution
+ - _subroutine_ __SaveSol__ : Sauvegarde la solution approchée
+ - _subroutine_ __SaveSolExact__ : Sauvegarde la solution exacte si elle est calculée
+ - _subroutine_ __SaveErr__ : Sauvegarde l'erreur en norme 2 entre la solution exacte et approchée 
+ - _subroutine_ __SaveTime__ : Sauvegarde le temps d'exécution
 
 ## src/main.f90
 
 Le programme avec la boucle en temps
-
-## function.cpp
-
-Initialise une class regroupant toutes les fonctions utiles,
-
- - Condition initial :  __InitialCondition__
- - Terme source : __SourceFunction__
- - Solution exact si on la connais (pour la validation) : __ExactSolution__
- - Condition de bords : 
-    - Droite/Gauche : __BoundaryCondition_h__
-    - Haut/Bas : __BoundaryCondition_g__
-
-> [!NOTE]
-> Toute ces fonctions sont liées à des __key__, présente dans le fichier _data.dat_, permettant de changer de condition initial, de terme source et de conditions de bord.
 
 
 # Validation

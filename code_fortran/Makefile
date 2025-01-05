@@ -95,6 +95,7 @@ clear:
 	$(RM) ./output/time/*dat
 	$(RM) ./output/time/*png
 	$(RM) ./output/*png
+	$(RM) ./output/*gif
 
 
 
