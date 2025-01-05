@@ -140,3 +140,13 @@ Afin de valider le code des cas tests ont été implémentés. Dans le fichier _
  - Conditions de bord : $g=0$ et $\mathcal{h} =1$
  - Pas de solution annalytique trouvée
  - Condition initiale : $u_{0} = \exp(-(x-Lx/2)^2)\exp(-(y-Ly/2)^2)$
+
+
+# Visualisation
+
+Afin de visualiser la solution calculé et la solution exacte il faut :
+ - se rendre dans le répertoir _output/_ : __cd output__
+ - exécuter le script 'trace_para.sh' : __./trace_para.sh [nombre itération temps]__ (si celui-ci n'a pas été préalablement mis en exécutable taper la commande __chmod +x trace_para.sh__)
+ - exécuter le scripte 'trace.gnu' : __gnuplot trace.gnu__ (dans le fichier 'trace.gnu' dans la boucle sur i faire correspondre la borne de fin avec le nombre d'itération en temps)
+ - un fichier _sol.gif_ a été créé 
+
