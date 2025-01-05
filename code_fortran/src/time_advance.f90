@@ -21,8 +21,11 @@ contains
         real(pr), dimension(1:df%Nx*df%jfin) :: Snp1
 
         Snp1 = 0.
+
+        ! -- Source terme definition
         Snp1 = SrcTermFunc(df, Un, tn+df%dt)
         
+        ! -- Implicite resolution
         call Lap_BiCGStab(df, Snp1, 10000, 1.e-8_pr, Unp1)
 
     end subroutine Advance

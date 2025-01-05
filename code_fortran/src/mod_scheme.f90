@@ -58,7 +58,7 @@ contains
             enddo
         enddo
 
-
+        ! -- Bordary condition managment
         if (df%BC_Schwarz == 1) then
             if (df%rank == 0) then
                 U_star(1+(jfin-1)*Nx:jfin*Nx) = dt*D/hy*Un(1+(jfin-1)*Nx:jfin*Nx)
@@ -131,6 +131,7 @@ contains
         Urecv_down = 0.
         Urecv_up = 0.
 
+        ! -- Reception of the message sent
         if (df%rank /= df%n_proc-1) then
             call MPI_RECV(Urecv_up, Nx, MPI_DOUBLE, df%rank+1, tag1*(df%rank), MPI_COMM_WORLD, status, ierr)
         endif
@@ -153,32 +154,28 @@ contains
             enddo
         enddo
 
-        !> -- Left and Right Boundary Condition
+        ! -- Left and Right Boundary Condition
         do l=1,Nx*jfin
             j = l/(Nx+1) + 1
             if (MOD(l-1,Nx) == 0) S_star(l) = S_star(l) - beta*BC_Left(df, 0.0_pr, ((jbeg)-1+j)*hy)
             if (MOD(l,Nx) == 0) S_star(l) = S_star(l) - beta*BC_Right(df, (Nx+1)*hx, ((jbeg)-1+j)*hy)
         enddo
 
-        !> -- Up and Down Boundary Condition
+        ! -- Up and Down Boundary Condition
         if (df%BC_Schwarz == 1) then
             if (df%rank == 0) then
                 do i=1,Nx
                     S_star(i) = S_star(i) - gamma*BC_Down(df, i*hx, 0.0_pr)
-                    !S_star(i+(jfin-1)*Nx) = S_star(i+(jfin-1)*Nx) + dt*D*Urecv_up(i)
-                    S_star(i+(jfin-1)*Nx) = dt*D/hy*Urecv_up(i)! + dt*SourceTerme(df, i*hx, jend*hy, t)
+                    S_star(i+(jfin-1)*Nx) = dt*D/hy*Urecv_up(i)
                 enddo
             elseif (df%rank == df%n_proc-1) then
                 do i=1,Nx
-                    !S_star(i) = S_star(i) + dt*D*Urecv_down(i)
-                    S_star(i) = dt*D/hy*Urecv_down(i)! + dt*SourceTerme(df, i*hx, jbeg*hy, t)
+                    S_star(i) = dt*D/hy*Urecv_down(i)
                     S_star((jfin-1)*Nx+i) = S_star((jfin-1)*Nx+i) - gamma*BC_Up(df, i*hx, (jend+1)*hy)
                 enddo
             else
-                ! S_star(1:Nx) = S_star(1:Nx) + dt*D*Urecv_down(1:Nx)
-                ! S_star(1+(jfin-1)*Nx:jfin*Nx) = S_star(1+(jfin-1)*Nx:jfin*Nx) + dt*D*Urecv_up(1:Nx)
-                S_star(1:Nx) = dt*D/hy*Urecv_down(1:Nx)! + dt*SourceTerme(df, i*hx, jbeg*hy, t)
-                S_star(1+(jfin-1)*Nx:jfin*Nx) = dt*D/hy*Urecv_up(1:Nx)! + dt*SourceTerme(df, i*hx, jend*hy, t)
+                S_star(1:Nx) = dt*D/hy*Urecv_down(1:Nx)
+                S_star(1+(jfin-1)*Nx:jfin*Nx) = dt*D/hy*Urecv_up(1:Nx)
             endif
         elseif (df%BC_Schwarz == 2) then
             if (df%rank == 0) then
@@ -224,8 +221,7 @@ contains
         jfin = df%jfin
 
 
-        ! Initialize exacte solution and solution 
-        ! with initial condition
+        ! -- Initialize exacte solution and solution 
         do j=1,jfin
             y = (jbeg-1+j)*df%hy
             do i=1,Nx
@@ -299,21 +295,17 @@ contains
         if (df%BC_Schwarz == 1) then
 
             if (df%rank /= df%n_proc-1) then
-                ! call MPI_SEND(Un(1+Nx*(jfin-df%overlap/2-2))&
-                ! , Nx, MPI_DOUBLE, df%rank+1, tag2*(df%rank+1), MPI_COMM_WORLD, ierr)
                 call MPI_SEND(Un(1+Nx*(jfin-df%overlap))&
                 , Nx, MPI_DOUBLE, df%rank+1, tag2*(df%rank+1), MPI_COMM_WORLD, ierr)
             endif
             if (df%rank /= 0) then
-                ! call MPI_SEND(Un(1+Nx*(df%overlap/2+1))&
-                ! , Nx, MPI_DOUBLE, df%rank-1, tag1*(df%rank-1), MPI_COMM_WORLD, ierr)
                 call MPI_SEND(Un(1+Nx*(df%overlap-1))&
                 , Nx, MPI_DOUBLE, df%rank-1, tag1*(df%rank-1), MPI_COMM_WORLD, ierr)
             endif
 
         elseif (df%BC_Schwarz == 2) then
 
-
+            ! -- Pre-computation of the terme that will be in the source terme at bounds
             U1 = Un(1+Nx*(jfin-df%overlap+1):Nx*(jfin-df%overlap+2))
             U2 = Un(1+Nx*(jfin-df%overlap):Nx*(jfin-df%overlap+1))
             U3 = Un(1+Nx*(jfin-df%overlap-1):Nx*(jfin-df%overlap))

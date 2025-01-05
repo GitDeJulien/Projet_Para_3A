@@ -29,8 +29,6 @@ contains
             iend = ibeg + q - 1
         end if
 
-        !print*, "me:", me, "q:", q, "r:", r, "ibeg:", ibeg, "iend", iend
-
     end subroutine charge
 
     subroutine overlapping_charge(me, n, n_proc, overlap, ibeg, iend)
@@ -51,8 +49,6 @@ contains
 
         ibeg = MAX(1, bis_ibeg)
         iend = MIN(n, bis_iend + overlap)
-
-        print*, "me:", me, "ibeg:", ibeg, "iend", iend
 
     end subroutine overlapping_charge
     
