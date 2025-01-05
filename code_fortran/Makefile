@@ -1,5 +1,5 @@
 #Name
-NAME = ST-VENANT_FINIT_VOLUME
+NAME = MPI-2D-Diffusion_Equation
 
 # Compiler
 #FC = gfortran
@@ -92,6 +92,9 @@ clear:
 	$(RM) ./output/vtk/*.vtk
 	$(RM) ./output/dat/exact/*.dat
 	$(RM) ./output/vtk/exact/*.vtk
+	$(RM) ./output/time/*dat
+	$(RM) ./output/time/*png
+	$(RM) ./output/*png
 
 
 

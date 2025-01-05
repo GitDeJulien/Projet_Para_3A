@@ -22,7 +22,6 @@ module data_mod
     integer  :: niter
     real(pr) :: dt
     real(pr) :: tfinal
-    real(pr) :: cfl
     
     ![Diffusion coefficient]
     real(pr) :: D
@@ -63,7 +62,6 @@ contains
         call parse_toml(filename, "t0", data%t0)
         call parse_toml(filename, "niter", data%niter)
         call parse_toml(filename, "dt", data%dt)
-        call parse_toml(filename, "cfl", data%cfl)
 
         call parse_toml(filename, "D", data%D)
         call parse_toml(filename, "BC_Schwarz", data%BC_Schwarz)

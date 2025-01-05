@@ -6,7 +6,7 @@ module scheme_mod
 
     integer, parameter :: tag1 = 1, tag2 = 2
 
-    public :: Lap_MatVectProduct, SourceTerme, InitSol
+    public :: Lap_MatVectProduct, SourceTerme, InitSol, ExactSolFunct, SendMessage
     
 contains
 

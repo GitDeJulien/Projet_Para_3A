@@ -3,6 +3,8 @@ module linear_algebra_mod
     use scheme_mod
     implicit none
 
+    public Lap_BiCGStab
+
 contains
 
     subroutine Lap_BiCGStab(df, b, max_it, tol, X)

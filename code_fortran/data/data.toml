@@ -10,7 +10,6 @@ Ny = 50
 t0 = 0.0
 niter = 100
 dt = 0.1
-cfl = 0.8
 
 [Diffusion coefficient]
 D = 1.0
@@ -22,4 +21,4 @@ acoeff = 1.0
 bcoeff = 1.0
 
 [CAS TEST]
-cas = 3
+cas = 1

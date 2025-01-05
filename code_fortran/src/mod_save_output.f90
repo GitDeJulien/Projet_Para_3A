@@ -5,7 +5,7 @@ module save_output_mod
     use MPI
     implicit none
 
-    public :: SaveSol, SaveSolExact
+    public :: SaveSol, SaveSolExact, SaveErr, SaveTime
     
 contains
     subroutine SaveSol(df, SOL, n, format)
