@@ -187,7 +187,7 @@ contains
         file="./output/time/BC."//trim(adjustl(ch_BC))//".np."//trim(adjustl(ch_n_proc))//".dat",&
         status='replace', action="write")
 
-        write(unit, *) elapsed_time
+        if (df%rank==0) write(unit, *) elapsed_time
 
         if (df%rank==0) close(unit)
 

@@ -1,5 +1,4 @@
-!> A Fortran module to read TOML data files and 
-!> return a ...
+!> A Fortran module to read TOML data files
 !> copyright novembre 2024 Julien TENAUD
 
 module toml_parser

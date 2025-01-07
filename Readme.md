@@ -12,6 +12,8 @@ Ce code à pour but de résoudre l'équation de conduction instationnaire en 2D,
  - Execution : 
     - __make exe_debug__ (exécution _debug_)
     - __make exe_release__ (exécution _release_)
+ - Pour changer le nombre de processeur il faut se rendre dans le __Makefile__ et à la ligne 9 mettre le nombre de processeurs voulu :
+    - RUN = mpirun -np [nombre de processeur]
 
 # Architecture du code
 
